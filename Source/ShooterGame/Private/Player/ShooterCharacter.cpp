@@ -67,6 +67,8 @@ AShooterCharacter::AShooterCharacter(const FObjectInitializer& ObjectInitializer
 
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
+	
+	TeleportDistance = 1000.0f;
 }
 
 void AShooterCharacter::PostInitializeComponents()
@@ -876,6 +878,8 @@ void AShooterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AShooterCharacter::OnStartRunning);
 	PlayerInputComponent->BindAction("RunToggle", IE_Pressed, this, &AShooterCharacter::OnStartRunningToggle);
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AShooterCharacter::OnStopRunning);
+
+	PlayerInputComponent->BindAction("Teleport", IE_Pressed, this, &AShooterCharacter::DoTeleport);
 }
 
 
@@ -1044,6 +1048,15 @@ bool AShooterCharacter::IsRunning() const
 	}
 
 	return (bWantsToRun || bWantsToRunToggled) && !GetVelocity().IsZero() && (GetVelocity().GetSafeNormal2D() | GetActorForwardVector()) > -0.1;
+}
+
+void AShooterCharacter::DoTeleport()
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if (MoveComp)
+	{
+		MoveComp->DoTeleport();
+	}
 }
 
 void AShooterCharacter::Tick(float DeltaSeconds)
@@ -1252,6 +1265,11 @@ bool AShooterCharacter::IsTargeting() const
 float AShooterCharacter::GetRunningSpeedModifier() const
 {
 	return RunningSpeedModifier;
+}
+
+float AShooterCharacter::GetTeleportDistance() const
+{
+	return TeleportDistance;
 }
 
 bool AShooterCharacter::IsFiring() const

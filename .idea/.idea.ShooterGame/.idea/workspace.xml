@@ -27,12 +27,23 @@
       <path>
         <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
         <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="BRANCH:develop" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:feature-character_teleport" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="54826268-0206-46b5-88e8-e60aeb081421" name="Default Changelist" comment="" />
+    <list default="true" id="54826268-0206-46b5-88e8-e60aeb081421" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/contentModel.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/contentModel.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Pawns/BotPawn.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Pawns/BotPawn.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Blueprints/Pawns/PlayerPawn.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Pawns/PlayerPawn.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Characters/Materials/HeroTPP.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Characters/Materials/HeroTPP.uasset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -41,18 +52,22 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="master" />
+        <entry key="$PROJECT_DIR$" value="develop" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="mock://D:/Workspace/ShooterGame/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" root0="FORCE_HIGHLIGHTING" />
+    <setting file="mock://D:/Workspace/ShooterGame/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" />
-        <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" />
         <option value="$PROJECT_DIR$/.gitignore" />
         <option value="$PROJECT_DIR$/.gitattributes" />
+        <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" />
+        <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" />
       </list>
@@ -65,8 +80,10 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.34994584" />
+    <property name="DebuggerViewTab_PTCS_LastProportionKey" value="0.30010834" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="settings.editor.selected.configurable" value="CodeLensConfigurable" />
   </component>
   <component name="RunManager" selected="C++ Project.ShooterGame">
     <configuration name="ShooterGame" type="CppProject" factoryName="C++ Project">
@@ -534,7 +551,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="develop" />
+                        <option value="feature-character_teleport" />
                       </list>
                     </value>
                   </entry>
@@ -545,13 +562,23 @@
         </entry>
       </map>
     </option>
+    <option name="oldMeFiltersMigrated" value="true" />
   </component>
   <component name="VcsManagerConfiguration">
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add .gitignore and .gitattributes" />
-    <option name="LAST_COMMIT_MESSAGE" value="Add .gitignore and .gitattributes" />
+    <MESSAGE value="Import the ShooterGame project. &#10;Add classes to implement custom character movements (UShooterCharacterMovement, FSavedMove_ExtendedMovement, FNetworkPredictionData_Client_ExtendedMovement)." />
+    <option name="LAST_COMMIT_MESSAGE" value="Import the ShooterGame project. &#10;Add classes to implement custom character movements (UShooterCharacterMovement, FSavedMove_ExtendedMovement, FNetworkPredictionData_Client_ExtendedMovement)." />
   </component>
   <component name="WindowStateProjectService">
+    <state x="715" y="224" key="#xdebugger.evaluate" timestamp="1605605553039">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="715" y="224" key="#xdebugger.evaluate/0.0.1920.1040@0.0.1920.1040" timestamp="1605605553039" />
+    <state width="524" height="464" key="DebuggerActiveHint" timestamp="1605608575998">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="524" height="464" key="DebuggerActiveHint/0.0.1920.1040@0.0.1920.1040" timestamp="1605608575998" />
     <state x="829" y="417" key="Github.ShareDialog" timestamp="1605467664099">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -560,41 +587,93 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="641" y="224" key="Github.UntrackedFilesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605467714030" />
-    <state width="1877" height="282" key="GridCell.Tab.0.bottom" timestamp="1605466199268">
+    <state width="1877" height="268" key="GridCell.Tab.0.bottom" timestamp="1605609642334">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="282" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605466199268" />
-    <state width="1877" height="282" key="GridCell.Tab.0.center" timestamp="1605466199268">
+    <state width="1877" height="268" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.0.center" timestamp="1605609642334">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="282" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605466199268" />
-    <state width="1877" height="282" key="GridCell.Tab.0.left" timestamp="1605466199267">
+    <state width="1877" height="268" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.0.left" timestamp="1605609642334">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="282" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605466199267" />
-    <state width="1877" height="282" key="GridCell.Tab.0.right" timestamp="1605466199268">
+    <state width="1877" height="268" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.0.right" timestamp="1605609642334">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="282" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605466199268" />
+    <state width="1877" height="268" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.1.bottom" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.1.center" timestamp="1605609642334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.1.left" timestamp="1605609642334">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642334" />
+    <state width="1877" height="268" key="GridCell.Tab.1.right" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.2.bottom" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.2.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.2.center" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.2.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.2.left" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.2.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.2.right" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.2.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.3.bottom" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.3.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.3.center" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.3.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.3.left" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.3.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
+    <state width="1877" height="268" key="GridCell.Tab.3.right" timestamp="1605609642335">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state width="1877" height="268" key="GridCell.Tab.3.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605609642335" />
     <state x="540" y="262" key="IDE.errors.dialog" timestamp="1605465247820">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="540" y="262" key="IDE.errors.dialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605465247820" />
-    <state x="461" y="164" key="SettingsEditor" timestamp="1605469426118">
+    <state x="785" y="230" key="RollbackChangesDialog" timestamp="1605609500313">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="461" y="164" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605469426118" />
-    <state x="552" y="252" key="Vcs.Push.Dialog.v2" timestamp="1605469134221">
+    <state x="785" y="230" key="RollbackChangesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605609500313" />
+    <state x="739" y="17" key="SettingsEditor" timestamp="1605556640406">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="552" y="252" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605469134221" />
-    <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1605469268996">
+    <state x="739" y="17" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605556640406" />
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2" timestamp="1605605094162">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605469268996" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1605468597043">
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605605094162" />
+    <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1605470405258">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1605468597043" />
+    <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605470405258" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1605607926203">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1605607926203" />
   </component>
 </project>

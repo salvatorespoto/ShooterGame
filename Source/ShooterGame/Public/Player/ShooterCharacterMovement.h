@@ -11,7 +11,7 @@ UCLASS()
 class UShooterCharacterMovement : public UCharacterMovementComponent
 {
 	GENERATED_UCLASS_BODY()
-    
+
 	friend class FSavedMove_ExtendedMovement;
 
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
@@ -21,6 +21,12 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
     virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 
 	virtual float GetMaxSpeed() const override;
+
+	/** Character teleport */
+	bool bWantsToTeleport : 1;
+	
+	/** Teleport character forward of "distance" units */
+	void DoTeleport();
 };
 
 class FSavedMove_ExtendedMovement : public FSavedMove_Character
@@ -38,6 +44,9 @@ public:
     virtual void SetMoveFor(ACharacter* Character, float InDeltaTime, FVector const& NewAccel, class FNetworkPredictionData_Client_Character& ClientData) override;
     
     virtual void PrepMoveFor(class ACharacter* Character) override;
+
+	/** Character teleport */
+	uint8 bSavedWantsToTeleport : 1;
 };
 
 class FNetworkPredictionData_Client_ExtendedMovement : public FNetworkPredictionData_Client_Character

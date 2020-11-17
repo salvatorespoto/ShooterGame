@@ -43393,6 +43393,8 @@
       <e p="UE4Game.Target.cs" t="Include" />
     </e>
     <e p="D:\Workspace\ShooterGame" t="IncludeFlat">
+      <e p=".gitattributes" t="Include" />
+      <e p=".gitignore" t="Include" />
       <e p="Config" t="Include">
         <e p="DefaultCrypto.ini" t="Include" />
         <e p="DefaultDeviceProfiles.ini" t="Include" />
