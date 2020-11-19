@@ -476,6 +476,57 @@ void AShooterHUD::DrawKills()
 
 }
 
+void AShooterHUD::DrawJetpackFuel()
+{
+	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(PlayerOwner);
+	AShooterPlayerState* MyPlayerState = Cast<AShooterPlayerState>(MyPC->PlayerState);
+
+	if (!MyPlayerState)
+		return;
+
+	Canvas->SetDrawColor(FColor::White);
+	
+	const float JetpackFuelOffsetY = 225;
+	const float JetpackFuelBoxWidth = 215;
+		
+	// Jetpack draw text
+	const float JetpackPosX = Canvas->ClipX - Canvas->OrgX - (JetpackFuelBoxWidth + Offset) * ScaleUI;
+	const float JetpackPosY =  Canvas->ClipY - Canvas->OrgY - (JetpackFuelOffsetY + Offset) * ScaleUI;
+	
+	Canvas->DrawIcon(KillsBg, JetpackPosX, JetpackPosY,	ScaleUI);
+
+	float TextScale = 0.47f;
+	FCanvasTextItem TextItem( FVector2D::ZeroVector, FText::GetEmpty(), BigFont, HUDDark );
+	TextItem.EnableShadow( FLinearColor::Black );
+
+	float SizeX, SizeY;
+	FString Text = LOCTEXT("Jetpack", "JETPACK").ToString();
+	Canvas->StrLen(BigFont, Text, SizeX, SizeY);
+
+	TextItem.Text = FText::FromString( Text );
+	TextItem.Scale = FVector2D( TextScale * ScaleUI, TextScale * ScaleUI );
+	TextItem.FontRenderInfo = ShadowedFont;
+	TextItem.SetColor(HUDDark);
+
+	Canvas->DrawItem( TextItem, JetpackPosX + KillsBg.UL * ScaleUI - ((JetpackFuelBoxWidth/2 - 25) * ScaleUI) - (SizeX * TextScale * ScaleUI) / 2,
+        JetpackPosY + (KillsBg.VL* ScaleUI - SizeY * TextScale * ScaleUI) / 2 );
+	
+	// Draw value of fuel left
+	if (MyPlayerState) Text = FString::FromInt(MyPlayerState->GetJetpackFuelLeft());
+	else Text = FString("0");
+	
+	TextScale = 0.88f;
+	Canvas->StrLen(BigFont, Text, SizeX, SizeY);
+
+	TextItem.Text = FText::FromString( Text );
+	if(MyPlayerState->GetJetpackFuelLeft() == 0) TextItem.SetColor(FColor(200,0,0,255));
+	TextItem.Scale = FVector2D( TextScale * ScaleUI, TextScale * ScaleUI );
+
+	Canvas->DrawItem( TextItem, JetpackPosX + Offset * ScaleUI + 1.5f * ScaleUI,
+        JetpackPosY + (KillsBg.VL * ScaleUI - SizeY * TextScale * ScaleUI) / 2 );
+
+}
+
 void AShooterHUD::NotifyOutOfAmmo()
 {
 	NoAmmoNotifyTime = GetWorld()->GetTimeSeconds();
@@ -578,6 +629,7 @@ void AShooterHUD::DrawHUD()
 		{
 			DrawHealth();
 			DrawWeaponHUD();
+			DrawJetpackFuel();
 		}
 		else
 		{

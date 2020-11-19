@@ -880,6 +880,9 @@ void AShooterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	PlayerInputComponent->BindAction("Run", IE_Released, this, &AShooterCharacter::OnStopRunning);
 
 	PlayerInputComponent->BindAction("Teleport", IE_Pressed, this, &AShooterCharacter::DoTeleport);
+	
+	PlayerInputComponent->BindAction("ActivateJetpack", IE_Pressed, this, &AShooterCharacter::OnActivateJetPack);
+	PlayerInputComponent->BindAction("ActivateJetpack", IE_Released, this, &AShooterCharacter::OnDeactivateJetPack);
 }
 
 
@@ -1050,6 +1053,25 @@ bool AShooterCharacter::IsRunning() const
 	return (bWantsToRun || bWantsToRunToggled) && !GetVelocity().IsZero() && (GetVelocity().GetSafeNormal2D() | GetActorForwardVector()) > -0.1;
 }
 
+bool AShooterCharacter::IsUsingJetPack() const
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if(MoveComp) return MoveComp->IsUsingJetpack();
+	return false;
+}
+
+void AShooterCharacter::OnActivateJetPack()
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if (MoveComp) MoveComp->DoActivateJetpack(true);
+}
+
+void AShooterCharacter::OnDeactivateJetPack()
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if (MoveComp) MoveComp->DoActivateJetpack(false);
+}
+
 void AShooterCharacter::DoTeleport()
 {
 	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
@@ -1178,7 +1200,6 @@ void AShooterCharacter::GetLifetimeReplicatedProps(TArray< FLifetimeProperty > &
 	// everyone except local owner: flag change is locally instigated
 	DOREPLIFETIME_CONDITION(AShooterCharacter, bIsTargeting, COND_SkipOwner);
 	DOREPLIFETIME_CONDITION(AShooterCharacter, bWantsToRun, COND_SkipOwner);
-
 	DOREPLIFETIME_CONDITION(AShooterCharacter, LastTakeHitInfo, COND_Custom);
 
 	// everyone

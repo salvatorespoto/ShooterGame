@@ -197,6 +197,12 @@ class AShooterCharacter : public ACharacter
 	/** player released run action */
 	void OnStopRunning();
 
+	/** player activated jetpack */
+	void OnActivateJetPack();
+
+	/** player deactivated jetpack */
+    void OnDeactivateJetPack();
+	
 	//////////////////////////////////////////////////////////////////////////
 	// Reading data
 
@@ -249,6 +255,9 @@ class AShooterCharacter : public ACharacter
 	/** get running state */
 	UFUNCTION(BlueprintCallable, Category = Pawn)
 	bool IsRunning() const;
+
+	/** player is using the jetpack */
+	bool IsUsingJetPack() const;
 
 	/** get camera view type */
 	UFUNCTION(BlueprintCallable, Category = Mesh)
@@ -321,7 +330,7 @@ protected:
 	/** Character teleport distance */
 	UPROPERTY(EditDefaultsOnly, Category = Pawn)
 	float TeleportDistance;
-
+	
 	/** from gamepad running is toggled */
 	uint8 bWantsToRunToggled : 1;
 
@@ -465,7 +474,7 @@ protected:
 	/** current weapon rep handler */
 	UFUNCTION()
 	void OnRep_CurrentWeapon(class AShooterWeapon* LastWeapon);
-
+	
 	/** [server] spawns default inventory */
 	void SpawnDefaultInventory();
 

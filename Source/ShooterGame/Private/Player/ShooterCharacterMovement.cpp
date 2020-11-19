@@ -3,10 +3,27 @@
 #include "ShooterGame.h"
 #include "Player/ShooterCharacterMovement.h"
 
-UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+#include <string>
+
+#include "ShooterPlayerState.h"
+
+UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	AirControl = 0.95f;
+	
+	// Jetpack
+	bIsJetpackEnabled = true;
+	bIsJetpackActive = false;
+	JetpackForce = 1500.f;
+	JetpackAccelerationModifier = 1.5f;
+	MaxJetpackFuel = 100.0f;
+	JetpackFuel = MaxJetpackFuel;
+	JetpackFuelConsumptionRate = 1.0f;
+	JetpackFuelRefillRate = 10.0f;
+
+	// Movement flags
 	bWantsToTeleport = false;
+	bWantsToJetpack = false;
 }
 
 void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
@@ -18,10 +35,19 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		return;
 	}
 
-	// Teleport is executed both on the owning client and the server
+	if (PawnOwner->IsLocallyControlled())
+	{
+		MoveDirection = PawnOwner->GetLastMovementInputVector();
+		if (GetNetMode() == ENetMode::NM_Client)
+		{
+			ServerSetMoveDirection(MoveDirection);
+		}
+	}
+	
+	// Teleport is executed both on the owning client for responsiveness and the server
 	if (bWantsToTeleport && (CharacterOwner->GetLocalRole() == ROLE_Authority || CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy))
 	{
-		const AShooterCharacter* ShooterCharacterOwner = Cast<AShooterCharacter>(PawnOwner);
+		AShooterCharacter* ShooterCharacterOwner = Cast<AShooterCharacter>(PawnOwner);
 
 		const FVector CurrentLocation = ShooterCharacterOwner->GetActorLocation();
 		const FVector NewLocation = ShooterCharacterOwner->GetActorLocation() + ShooterCharacterOwner->GetActorForwardVector() * ShooterCharacterOwner->GetTeleportDistance();
@@ -30,6 +56,30 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		PawnOwner->SetActorLocation(NewLocation, true);
 		bWantsToTeleport = false;
 	}
+
+	// Jetpack movement executed both on clients and server 
+	if (bWantsToJetpack == true && CanJetpack() == true)
+	{
+		bIsJetpackActive = true;	
+		JetpackFuel = FMath::Clamp(JetpackFuel - JetpackFuelConsumptionRate * DeltaSeconds, 0.0f, MaxJetpackFuel);
+
+		// The owner client update the fuel left in the player state 
+		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+		if(PlayerController)
+		{
+			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(PlayerController->PlayerState);
+			PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
+		}
+		
+		SetMovementMode(MOVE_Falling);
+		
+		Velocity.Z += JetpackForce * DeltaSeconds;
+		Velocity.Y += (MoveDirection.Y * JetpackForce * DeltaSeconds) * 0.5f;
+		Velocity.X += (MoveDirection.X * JetpackForce * DeltaSeconds) * 0.5f;
+	}
+	else bIsJetpackActive = false;
+
+	RefillJetpack(DeltaSeconds);
 }
 
 float UShooterCharacterMovement::GetMaxSpeed() const
@@ -52,16 +102,79 @@ float UShooterCharacterMovement::GetMaxSpeed() const
 	return MaxSpeed;
 }
 
+float UShooterCharacterMovement::GetMaxAcceleration() const
+{
+	float MaxAcceleration = Super::GetMaxAcceleration();
+	
+	if (bIsJetpackActive == true && bWantsToJetpack == true)
+	{
+		MaxAcceleration *= JetpackAccelerationModifier;
+	}
+	
+	return MaxAcceleration;
+}
+
+FVector UShooterCharacterMovement::NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity, float DeltaTime) const
+{
+	if (bIsJetpackActive == true)
+	{
+		// Better scale down the gravity when using the jetpack
+		return Super::NewFallVelocity(InitialVelocity, (Gravity * GravityScaleWhileJetpack), DeltaTime);
+	}
+	
+	return Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
+}
+
+bool UShooterCharacterMovement::ServerSetMoveDirection_Validate(const FVector& MoveDir)
+{
+	return true;
+}
+
+void UShooterCharacterMovement::ServerSetMoveDirection_Implementation(const FVector& MoveDir)
+{
+	MoveDirection = MoveDir;
+}
+
+void UShooterCharacterMovement::DoActivateJetpack(bool bActivate)
+{
+	bWantsToJetpack = bActivate;
+}
+
+bool UShooterCharacterMovement::IsUsingJetpack() const
+{
+	return bIsJetpackActive;
+}
+
+bool UShooterCharacterMovement::CanJetpack() const
+{
+	return JetpackFuel > 0.0f;
+}
+
+void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
+{
+	if (IsMovingOnGround())
+	{
+		if(JetpackFuel < MaxJetpackFuel) JetpackFuel = FMath::Clamp(JetpackFuel + JetpackFuelRefillRate * DeltaSeconds, 0.0f, MaxJetpackFuel);
+		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+		if(PlayerController)
+		{
+			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(PlayerController->PlayerState);
+			PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
+		}
+	}
+}
+
 void UShooterCharacterMovement::DoTeleport()
 {
 	bWantsToTeleport = true;
 }
 
-void UShooterCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)//Client only
+void UShooterCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);
 
 	bWantsToTeleport = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
+	bWantsToJetpack = (Flags&FSavedMove_Character::FLAG_Custom_1) != 0;
 }
 
 class FNetworkPredictionData_Client* UShooterCharacterMovement::GetPredictionData_Client() const
@@ -85,6 +198,7 @@ void FSavedMove_ExtendedMovement::Clear()
 {
 	Super::Clear();
 	bSavedWantsToTeleport = 0;
+	bSavedWantsToJetpack = false;
 }
 
 uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
@@ -92,6 +206,7 @@ uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
 	uint8 Result = Super::GetCompressedFlags();
 
 	if(bSavedWantsToTeleport) Result |= FLAG_Custom_0;
+	if(bSavedWantsToJetpack) Result |= FLAG_Custom_1;
 	
 	return Result;
 }
@@ -102,7 +217,15 @@ bool FSavedMove_ExtendedMovement::CanCombineWith(const FSavedMovePtr& NewMove, A
 	{
 		return false;
 	}
-
+	if (bSavedWantsToJetpack != ((FSavedMove_ExtendedMovement*)&NewMove)->bSavedWantsToJetpack)
+	{
+		return false;
+	}
+	if (SavedJetpackFuel != ((FSavedMove_ExtendedMovement*)&NewMove)->SavedJetpackFuel)
+	{
+		return false;
+	}
+	
 	return Super::CanCombineWith(NewMove, Character, MaxDelta);
 }
 
@@ -112,8 +235,11 @@ void FSavedMove_ExtendedMovement::SetMoveFor(ACharacter* Character, float InDelt
 	UShooterCharacterMovement* CharMov = Cast<UShooterCharacterMovement>(Character->GetCharacterMovement());
 	if (CharMov)
 	{
-		// Set the move properties before saving and sending to the server
+		// Set the move properties before saving and sending it to the server
+		SavedMoveDirection = CharMov->MoveDirection;
 		bSavedWantsToTeleport = CharMov->bWantsToTeleport;
+		SavedJetpackFuel = CharMov->JetpackFuel;
+		bSavedWantsToJetpack = CharMov->bWantsToJetpack;
 	}
 }
 
@@ -125,6 +251,10 @@ void FSavedMove_ExtendedMovement::PrepMoveFor(class ACharacter* Character)
 	if (CharMov)
 	{
 		// Set up character properties, used in movement prediction
+		CharMov->MoveDirection = SavedMoveDirection;
+		CharMov->JetpackFuel = SavedJetpackFuel;
+		CharMov->bWantsToTeleport = bSavedWantsToTeleport;
+		CharMov->bWantsToJetpack = bSavedWantsToJetpack;
 	}
 }
 

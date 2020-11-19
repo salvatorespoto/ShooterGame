@@ -54,6 +54,9 @@ class AShooterPlayerState : public APlayerState
 	/** get number of rockets fired this match */
 	int32 GetNumRocketsFired() const;
 
+	/** get how much jetpack fuel is left */
+	int32 GetJetpackFuelLeft() const;
+
 	/** get whether the player quit the match */
 	bool IsQuitter() const;
 
@@ -75,6 +78,9 @@ class AShooterPlayerState : public APlayerState
 	//We don't need stats about amount of ammo fired to be server authenticated, so just increment these with local functions
 	void AddBulletsFired(int32 NumBullets);
 	void AddRocketsFired(int32 NumRockets);
+
+	/** Set the fuel left in the jetpack */
+	void SetJetpackFuelLeft(int32 FuelLeft);
 
 	/** Set whether the player is a quitter */
 	void SetQuitter(bool bInQuitter);
@@ -104,6 +110,10 @@ protected:
 	/** number of rockets fired this match */
 	UPROPERTY()
 	int32 NumRocketsFired;
+
+	/** how much jetpack fuel is left */
+	UPROPERTY()
+	int32 JetpackFuelLeft;
 
 	/** whether the user quit the match */
 	UPROPERTY()

@@ -323,6 +323,9 @@ protected:
 	/** Draws kills information. */
 	void DrawKills();
 
+	/** Draws jetpack information. */
+	void DrawJetpackFuel();
+
 	/** Draw player's health bar. */
 	void DrawHealth();
 

@@ -11,6 +11,7 @@ AShooterPlayerState::AShooterPlayerState(const FObjectInitializer& ObjectInitial
 	NumDeaths = 0;
 	NumBulletsFired = 0;
 	NumRocketsFired = 0;
+	JetpackFuelLeft = 0;
 	bQuitter = false;
 }
 
@@ -72,6 +73,11 @@ void AShooterPlayerState::AddRocketsFired(int32 NumRockets)
 	NumRocketsFired += NumRockets;
 }
 
+void AShooterPlayerState::SetJetpackFuelLeft(int32 FuelLeft)
+{
+	JetpackFuelLeft = FuelLeft;
+}
+
 void AShooterPlayerState::SetQuitter(bool bInQuitter)
 {
 	bQuitter = bInQuitter;
@@ -124,6 +130,11 @@ int32 AShooterPlayerState::GetNumBulletsFired() const
 int32 AShooterPlayerState::GetNumRocketsFired() const
 {
 	return NumRocketsFired;
+}
+
+int32 AShooterPlayerState::GetJetpackFuelLeft() const
+{
+	return JetpackFuelLeft;
 }
 
 bool AShooterPlayerState::IsQuitter() const
