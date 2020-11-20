@@ -2,6 +2,7 @@
 
 #include "ShooterGame.h"
 #include "Player/ShooterCharacterMovement.h"
+#include "Classes/Kismet/KismetSystemLibrary.h"
 
 #include <string>
 
@@ -21,9 +22,13 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	JetpackFuelConsumptionRate = 1.0f;
 	JetpackFuelRefillRate = 10.0f;
 
+	// Wall jump
+	WallJumpStrength = 1000.0f;
+	
 	// Movement flags
 	bWantsToTeleport = false;
 	bWantsToJetpack = false;
+
 }
 
 void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
@@ -78,7 +83,7 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		Velocity.X += (MoveDirection.X * JetpackForce * DeltaSeconds) * 0.5f;
 	}
 	else bIsJetpackActive = false;
-
+	
 	RefillJetpack(DeltaSeconds);
 }
 
@@ -164,6 +169,42 @@ void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
 	}
 }
 
+bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal) const
+{
+	if(IsMovingOnGround()) return false;
+	
+	FVector Location = CharacterOwner->GetActorLocation() - FVector(0.0f, 0.0f, CharacterOwner->GetDefaultHalfHeight());
+	float Radius = CharacterOwner->GetSimpleCollisionRadius() + 30.0f;
+	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic) };
+	TArray<AActor*> IgnoredActors;
+	TArray<AActor*> OverlappedActors;
+
+	if(UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Location, Radius, ObjectTypes, ABlockingVolume::StaticClass(), IgnoredActors, OverlappedActors))
+	{	
+		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Overlappo ") + FString::FromInt( OverlappedActors.Num()));
+		AActor* Wall = OverlappedActors.Pop();
+
+		FHitResult OutHit;
+		FCollisionQueryParams CollisionParams;
+		Wall->ActorLineTraceSingle(OutHit, Location, FVector(Wall->GetActorLocation().X, Wall->GetActorLocation().Y, Location.Z), ECC_WorldStatic, CollisionParams);
+		WallNormal = FVector(OutHit.Normal.X, OutHit.Normal.Y, OutHit.Normal.Z);
+		return true;
+	}
+	
+	return false;
+}
+
+void UShooterCharacterMovement::DoWallJump() const
+{
+	FVector WallNormal;
+	if(bIsJetpackActive && IsInAirNearWall(WallNormal))
+	{
+		FVector JumpDirection = WallNormal + FVector(0.0f, 0.0f, 10.f); // Jump a little higher
+		ServerLaunchCharacter(WallNormal * WallJumpStrength);
+		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(WallNormal * WallJumpStrength, false, false);
+	}
+}
+
 void UShooterCharacterMovement::DoTeleport()
 {
 	bWantsToTeleport = true;
@@ -194,11 +235,22 @@ class FNetworkPredictionData_Client* UShooterCharacterMovement::GetPredictionDat
 	return ClientPredictionData;
 }
 
+bool UShooterCharacterMovement::ServerLaunchCharacter_Validate(const FVector& Direction)
+{
+	return true;
+}
+
+void UShooterCharacterMovement::ServerLaunchCharacter_Implementation(const FVector& Direction) const
+{
+	if(PawnOwner->GetLocalRole() == ROLE_Authority)
+		CharacterOwner->LaunchCharacter(Direction, false, false);
+}
+
 void FSavedMove_ExtendedMovement::Clear()
 {
 	Super::Clear();
 	bSavedWantsToTeleport = 0;
-	bSavedWantsToJetpack = false;
+	bSavedWantsToJetpack = 0;
 }
 
 uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const

@@ -27,23 +27,20 @@
       <path>
         <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
         <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
-        <item name="BRANCH:feature-character_jetpack" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="BRANCH:feature-character_wall_jump" type="e8cecc67:BranchNodeDescriptor" />
       </path>
     </select>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="54826268-0206-46b5-88e8-e60aeb081421" name="Default Changelist" comment="Add teleport movement to the ShooterCharacter.">
+    <list default="true" id="54826268-0206-46b5-88e8-e60aeb081421" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Config/DefaultInput.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultInput.ini" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Config/DefaultEditor.ini" beforeDir="false" afterPath="$PROJECT_DIR$/Config/DefaultEditor.ini" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Content/Blueprints/Pawns/PlayerPawn.uasset" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Blueprints/Pawns/PlayerPawn.uasset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/Online/ShooterPlayerState.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/Online/ShooterPlayerState.cpp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Content/Maps/Highrise_Collisions_Temp.umap" beforeDir="false" afterPath="$PROJECT_DIR$/Content/Maps/Highrise_Collisions_Temp.umap" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Private/UI/ShooterHUD.cpp" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Private/UI/ShooterHUD.cpp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/Online/ShooterPlayerState.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/Online/ShooterPlayerState.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Source/ShooterGame/Public/UI/ShooterHUD.h" beforeDir="false" afterPath="$PROJECT_DIR$/Source/ShooterGame/Public/UI/ShooterHUD.h" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,9 +63,9 @@
         <option value="$PROJECT_DIR$/Source/ShooterGame/Public/UI/ShooterHUD.h" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Online/ShooterPlayerState.h" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Online/ShooterPlayerState.cpp" />
+        <option value="$PROJECT_DIR$/Source/ShooterGame/Private/UI/ShooterHUD.cpp" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacter.h" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacter.cpp" />
-        <option value="$PROJECT_DIR$/Source/ShooterGame/Private/UI/ShooterHUD.cpp" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Public/Player/ShooterCharacterMovement.h" />
         <option value="$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp" />
       </list>
@@ -81,7 +78,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
-    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.34994584" />
+    <property name="DebuggerViewTab_PTCS_FirstProportionKey" value="0.34940413" />
     <property name="DebuggerViewTab_PTCS_LastProportionKey" value="0.30010834" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="XThreadsFramesViewSplitterKey" value="0.5007752" />
@@ -553,7 +550,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="feature-character_jetpack" />
+                        <option value="feature-character_wall_jump" />
                       </list>
                     </value>
                   </entry>
@@ -570,17 +567,18 @@
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
     <MESSAGE value="Add .gitignore and .gitattributes" />
     <MESSAGE value="Import the ShooterGame project. &#10;Add classes to implement custom character movements (UShooterCharacterMovement, FSavedMove_ExtendedMovement, FNetworkPredictionData_Client_ExtendedMovement)." />
-    <option name="LAST_COMMIT_MESSAGE" value="Import the ShooterGame project. &#10;Add classes to implement custom character movements (UShooterCharacterMovement, FSavedMove_ExtendedMovement, FNetworkPredictionData_Client_ExtendedMovement)." />
+    <MESSAGE value="Add jetpack movement to ShooterCharacter" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add jetpack movement to ShooterCharacter" />
   </component>
   <component name="WindowStateProjectService">
-    <state x="715" y="224" key="#xdebugger.evaluate" timestamp="1605605553039">
+    <state x="715" y="349" width="490" height="467" key="#xdebugger.evaluate" timestamp="1605783730113">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="715" y="224" key="#xdebugger.evaluate/0.0.1920.1040@0.0.1920.1040" timestamp="1605605553039" />
-    <state width="608" height="464" key="DebuggerActiveHint" timestamp="1605706435591">
+    <state x="715" y="349" width="490" height="467" key="#xdebugger.evaluate/0.0.1920.1040@0.0.1920.1040" timestamp="1605783730113" />
+    <state width="608" height="464" key="DebuggerActiveHint" timestamp="1605884029760">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="608" height="464" key="DebuggerActiveHint/0.0.1920.1040@0.0.1920.1040" timestamp="1605706435591" />
+    <state width="608" height="464" key="DebuggerActiveHint/0.0.1920.1040@0.0.1920.1040" timestamp="1605884029760" />
     <state x="829" y="417" key="Github.ShareDialog" timestamp="1605467664099">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -589,70 +587,70 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="641" y="224" key="Github.UntrackedFilesDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605467714030" />
-    <state width="1877" height="268" key="GridCell.Tab.0.bottom" timestamp="1605776947990">
+    <state width="1877" height="268" key="GridCell.Tab.0.bottom" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947990" />
-    <state width="1877" height="268" key="GridCell.Tab.0.center" timestamp="1605776947990">
+    <state width="1877" height="268" key="GridCell.Tab.0.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.0.center" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947990" />
-    <state width="1877" height="268" key="GridCell.Tab.0.left" timestamp="1605776947990">
+    <state width="1877" height="268" key="GridCell.Tab.0.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.0.left" timestamp="1605890242121">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947990" />
-    <state width="1877" height="268" key="GridCell.Tab.0.right" timestamp="1605776947990">
+    <state width="1877" height="268" key="GridCell.Tab.0.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242121" />
+    <state width="1877" height="268" key="GridCell.Tab.0.right" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947990" />
-    <state width="1877" height="268" key="GridCell.Tab.1.bottom" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.0.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.1.bottom" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.1.center" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.1.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.1.center" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.1.left" timestamp="1605776947990">
+    <state width="1877" height="268" key="GridCell.Tab.1.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.1.left" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947990" />
-    <state width="1877" height="268" key="GridCell.Tab.1.right" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.1.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.1.right" timestamp="1605890242122">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.2.bottom" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.1.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242122" />
+    <state width="1877" height="268" key="GridCell.Tab.2.bottom" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.2.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.2.center" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.2.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.2.center" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.2.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.2.left" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.2.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.2.left" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.2.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.2.right" timestamp="1605776947991">
+    <state width="1877" height="268" key="GridCell.Tab.2.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.2.right" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.2.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947991" />
-    <state width="1877" height="268" key="GridCell.Tab.3.bottom" timestamp="1605776947992">
+    <state width="1877" height="268" key="GridCell.Tab.2.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.3.bottom" timestamp="1605890242124">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.3.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947992" />
-    <state width="1877" height="268" key="GridCell.Tab.3.center" timestamp="1605776947992">
+    <state width="1877" height="268" key="GridCell.Tab.3.bottom/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242124" />
+    <state width="1877" height="268" key="GridCell.Tab.3.center" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.3.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947992" />
-    <state width="1877" height="268" key="GridCell.Tab.3.left" timestamp="1605776947992">
+    <state width="1877" height="268" key="GridCell.Tab.3.center/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.3.left" timestamp="1605890242123">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.3.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947992" />
-    <state width="1877" height="268" key="GridCell.Tab.3.right" timestamp="1605776947992">
+    <state width="1877" height="268" key="GridCell.Tab.3.left/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242123" />
+    <state width="1877" height="268" key="GridCell.Tab.3.right" timestamp="1605890242124">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state width="1877" height="268" key="GridCell.Tab.3.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605776947992" />
+    <state width="1877" height="268" key="GridCell.Tab.3.right/0.0.1920.1040@0.0.1920.1040" timestamp="1605890242124" />
     <state x="540" y="262" key="IDE.errors.dialog" timestamp="1605465247820">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
@@ -665,17 +663,32 @@
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="739" y="17" key="SettingsEditor/0.0.1920.1040@0.0.1920.1040" timestamp="1605556640406" />
-    <state x="552" y="252" key="Vcs.Push.Dialog.v2" timestamp="1605605094162">
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2" timestamp="1605780030864">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="552" y="252" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605605094162" />
+    <state x="552" y="252" key="Vcs.Push.Dialog.v2/0.0.1920.1040@0.0.1920.1040" timestamp="1605780030864" />
     <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog" timestamp="1605470405258">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
     <state x="812" y="253" key="com.intellij.openapi.vcs.changes.SpecificFilesViewDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605470405258" />
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1605730699818">
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup" timestamp="1605867349413">
       <screen x="0" y="0" width="1920" height="1040" />
     </state>
-    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1605730699818" />
+    <state x="623" y="225" width="672" height="678" key="search.everywhere.popup/0.0.1920.1040@0.0.1920.1040" timestamp="1605867349413" />
+    <state x="682" y="433" key="vcs.readOnlyHandler.ReadOnlyStatusDialog" timestamp="1605792083591">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="682" y="433" key="vcs.readOnlyHandler.ReadOnlyStatusDialog/0.0.1920.1040@0.0.1920.1040" timestamp="1605792083591" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
+          <url>file://$PROJECT_DIR$/Source/ShooterGame/Private/Player/ShooterCharacterMovement.cpp</url>
+          <line>2</line>
+          <option name="timeStamp" value="3" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

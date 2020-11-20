@@ -883,6 +883,8 @@ void AShooterCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerI
 	
 	PlayerInputComponent->BindAction("ActivateJetpack", IE_Pressed, this, &AShooterCharacter::OnActivateJetPack);
 	PlayerInputComponent->BindAction("ActivateJetpack", IE_Released, this, &AShooterCharacter::OnDeactivateJetPack);
+
+	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AShooterCharacter::OnWallJump);
 }
 
 
@@ -1051,6 +1053,12 @@ bool AShooterCharacter::IsRunning() const
 	}
 
 	return (bWantsToRun || bWantsToRunToggled) && !GetVelocity().IsZero() && (GetVelocity().GetSafeNormal2D() | GetActorForwardVector()) > -0.1;
+}
+
+void AShooterCharacter::OnWallJump()
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if(MoveComp) MoveComp->DoWallJump();
 }
 
 bool AShooterCharacter::IsUsingJetPack() const

@@ -91,6 +91,22 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** Refill the jetpcka fuel when moving on the ground*/
 	void RefillJetpack(float DeltaSeconds);
 
+	
+	//// WALL JUMP while jetpacking ////
+
+	/** The wall jump strength */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack")
+	float WallJumpStrength;
+	
+	/** Check if the character is in the air and near a wall */
+	bool IsInAirNearWall(FVector& WallNormal) const;
+	
+	/** [Server] + [Local] The character execute  a wall jump */ 
+	void DoWallJump() const;
+	
+	/** [Server] Launch the character */
+	UFUNCTION(Reliable, Server, WithValidation)
+    void ServerLaunchCharacter(const FVector& Direction) const;
 };
 
 class FSavedMove_ExtendedMovement : public FSavedMove_Character

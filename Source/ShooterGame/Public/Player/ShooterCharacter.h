@@ -187,6 +187,9 @@ class AShooterCharacter : public ACharacter
 
 	/** player released jump action */
 	void OnStopJump();
+	
+	/** player wants to execute a wall jump */	
+	void OnWallJump();
 
 	/** player pressed run action */
 	void OnStartRunning();
