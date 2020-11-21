@@ -181,14 +181,26 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal) const
 
 	if(UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Location, Radius, ObjectTypes, ABlockingVolume::StaticClass(), IgnoredActors, OverlappedActors))
 	{	
-		GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Overlappo ") + FString::FromInt( OverlappedActors.Num()));
-		AActor* Wall = OverlappedActors.Pop();
+		// Can overlap more than one bounding volume (es. ceil and side wall)
+		for(const AActor* Wall : OverlappedActors)
+		{
+			// Get the bounding volume normal
+			FHitResult OutHit;
+			FCollisionQueryParams CollisionParams;
+			Wall->ActorLineTraceSingle(OutHit, Location, FVector(Wall->GetActorLocation().X, Wall->GetActorLocation().Y, Location.Z), ECC_WorldStatic, CollisionParams);
 
-		FHitResult OutHit;
-		FCollisionQueryParams CollisionParams;
-		Wall->ActorLineTraceSingle(OutHit, Location, FVector(Wall->GetActorLocation().X, Wall->GetActorLocation().Y, Location.Z), ECC_WorldStatic, CollisionParams);
-		WallNormal = FVector(OutHit.Normal.X, OutHit.Normal.Y, OutHit.Normal.Z);
-		return true;
+			// Skip bounding volume that are not vertical
+			WallNormal = FVector(OutHit.Normal.X, OutHit.Normal.Y, OutHit.Normal.Z);
+			if(FMath::IsNearlyZero(WallNormal.X) && FMath::IsNearlyZero(WallNormal.Y)) continue;	// Skip ceil and floor
+			if(WallNormal.CosineAngle2D(WallNormal) < 0.25*PI) continue;	// Skip "not so vertical" walls 
+
+			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Normal ") + WallNormal.ToString());
+
+			// The player is near a wall
+			return true;
+		}
+		
+		return false;
 	}
 	
 	return false;
