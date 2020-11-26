@@ -1058,7 +1058,8 @@ bool AShooterCharacter::IsRunning() const
 void AShooterCharacter::OnWallJump()
 {
 	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
-	if(MoveComp) MoveComp->DoWallJump();
+	if(MoveComp && MoveComp->bIsWallRunning) MoveComp->DoWallJump(GetActorForwardVector()); 
+	else if(MoveComp) MoveComp->DoNormalWallJump();
 }
 
 bool AShooterCharacter::IsUsingJetPack() const
@@ -1109,7 +1110,11 @@ void AShooterCharacter::Tick(float DeltaSeconds)
 			}
 		}
 	}
-
+	
+	//// Wall run
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	MoveComp->DoWallRun(true);	// Always do wall run when possible
+	
 	if (GEngine->UseSound())
 	{
 		if (LowHealthSound)

@@ -11,6 +11,9 @@
 UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AirControl = 0.95f;
+
+	// Teleport
+	bWantsToTeleport = false;
 	
 	// Jetpack
 	bIsJetpackEnabled = true;
@@ -21,14 +24,24 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	JetpackFuel = MaxJetpackFuel;
 	JetpackFuelConsumptionRate = 1.0f;
 	JetpackFuelRefillRate = 10.0f;
-
+	bWantsToJetpack = false;
+	
 	// Wall jump
 	WallJumpStrength = 1000.0f;
-	
-	// Movement flags
-	bWantsToTeleport = false;
-	bWantsToJetpack = false;
 
+	// Wall run
+	bWallRunEnable = true;
+	MaxWallRunTime = 3.5f;
+	MinSpeedToWallRun = 50.0f;
+	WallNormal = FVector(0.0f);
+	WallRunSide = 0;
+	bIsWallRunning = false;
+	bWantsToWallRun = false;
+}
+
+void UShooterCharacterMovement::GetLifetimeReplicatedProps(::TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 }
 
 void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
@@ -85,6 +98,25 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 	else bIsJetpackActive = false;
 	
 	RefillJetpack(DeltaSeconds);
+
+	
+	//// Wall run ////
+	
+	if(IsMovingOnGround()) // Reset wall jump variables when walking on the ground
+	{
+		WallNormal = FVector(0.0f);
+		WallRunSide = 0;
+		CharacterSideLean(0.0f);
+	}
+	
+	if(bWallRunEnable && bWantsToWallRun && !bIsWallRunning && CanWallRun()) // Not wall running -> wall running
+	{ 
+		SetWallRun(true, WallNormal);
+	}
+	else if(bWallRunEnable && (!bWantsToWallRun || !CanWallRun()) && bIsWallRunning) // Wall running -> not wall running
+	{
+		SetWallRun(false, WallNormal);
+	}
 }
 
 float UShooterCharacterMovement::GetMaxSpeed() const
@@ -125,6 +157,10 @@ FVector UShooterCharacterMovement::NewFallVelocity(const FVector& InitialVelocit
 	{
 		// Better scale down the gravity when using the jetpack
 		return Super::NewFallVelocity(InitialVelocity, (Gravity * GravityScaleWhileJetpack), DeltaTime);
+	}
+	if (bIsWallRunning)
+	{
+		return Super::NewFallVelocity(InitialVelocity, FVector(0.0f), DeltaTime);
 	}
 	
 	return Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
@@ -169,7 +205,7 @@ void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
 	}
 }
 
-bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal) const
+bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal)
 {
 	if(IsMovingOnGround()) return false;
 	
@@ -178,26 +214,57 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal) const
 	TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes = { UEngineTypes::ConvertToObjectType(ECollisionChannel::ECC_WorldStatic) };
 	TArray<AActor*> IgnoredActors;
 	TArray<AActor*> OverlappedActors;
-
 	if(UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Location, Radius, ObjectTypes, ABlockingVolume::StaticClass(), IgnoredActors, OverlappedActors))
 	{	
-		// Can overlap more than one bounding volume (es. ceil and side wall)
+		// Can overlap more than one bounding volume (es. ceil and side wall), look for a valid overlap
 		for(const AActor* Wall : OverlappedActors)
 		{
-			// Get the bounding volume normal
+			if (!Wall->ActorHasTag("Wall")) continue;	// Only objects tagged as "Wall" can be runned
+			
+
+			// Look for the best collision point in the four direction respect to the actor: forward, left, back, right
+			FVector TestDirs[4] = { CharacterOwner->GetActorForwardVector() * Radius, CharacterOwner->GetActorRightVector() * Radius, -CharacterOwner->GetActorForwardVector() * Radius, -CharacterOwner->GetActorRightVector() * Radius };
 			FHitResult OutHit;
 			FCollisionQueryParams CollisionParams;
-			Wall->ActorLineTraceSingle(OutHit, Location, FVector(Wall->GetActorLocation().X, Wall->GetActorLocation().Y, Location.Z), ECC_WorldStatic, CollisionParams);
+			float ImpactDistance = 0;
+			FVector HitPoint;
+			bool bFound = false;
+			for(FVector TestDir : TestDirs)
+			{
+				Wall->ActorLineTraceSingle(OutHit, Location, Location + TestDir, ECC_WorldStatic, CollisionParams);
+				if(OutHit.Normal.IsZero()) continue; // No hit in this direction
+				
+				if(WallNormal.IsZero()) WallNormal = OutHit.Normal; // First hit 
+
+				float NewImpactDistance = (OutHit.ImpactPoint - Location).Size(); 
+				if(ImpactDistance == 0 || NewImpactDistance < ImpactDistance ) // Check if this is is better than the previous one
+				{
+					WallNormal = OutHit.Normal;
+					HitPoint = OutHit.ImpactPoint;
+					ImpactDistance = NewImpactDistance;
+					bFound = true;
+				} 
+			}
+
+			if(!bFound) continue; // No valid hit found -> Test next colliding volume
 
 			// Skip bounding volume that are not vertical
-			WallNormal = FVector(OutHit.Normal.X, OutHit.Normal.Y, OutHit.Normal.Z);
-			if(FMath::IsNearlyZero(WallNormal.X) && FMath::IsNearlyZero(WallNormal.Y)) continue;	// Skip ceil and floor
-			if(WallNormal.CosineAngle2D(WallNormal) < 0.25*PI) continue;	// Skip "not so vertical" walls 
+			if(FMath::IsNearlyZero(WallNormal.X) && FMath::IsNearlyZero(WallNormal.Y)) continue; // Skip ceil and floor
+			if(WallNormal.CosineAngle2D(WallNormal) < 0.25*PI) continue; // Skip "not so vertical" walls 
+			
+			// DrawDebugDirectionalArrow(GetWorld(), HitPoint, HitPoint + WallNormal * 100.0f, 120.f, FColor::Magenta, true, -1.f, 0, 5.f);
 
-			GEngine->AddOnScreenDebugMessage(-1, 15.0f, FColor::Yellow, TEXT("Normal ") + WallNormal.ToString());
-
-			// The player is near a wall
-			return true;
+			// Update wall side due the character can turn 180 while wall running
+			float NewWallRunSide = FMath::Sign(FVector::CrossProduct(WallNormal, PawnOwner->GetActorForwardVector()).Z);
+			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+			if(PlayerController && NewWallRunSide != WallRunSide)
+			{
+				WallRunSide = NewWallRunSide;
+				CharacterSideLean(0.0f);
+				CharacterSideLean(-10.0f * WallRunSide); // Apply the proper lean
+			}
+			
+			return true; // The player is near a wall -> return true 
 		}
 		
 		return false;
@@ -206,15 +273,81 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal) const
 	return false;
 }
 
-void UShooterCharacterMovement::DoWallJump() const
+void UShooterCharacterMovement::DoNormalWallJump()
 {
 	FVector WallNormal;
-	if(bIsJetpackActive && IsInAirNearWall(WallNormal))
+	
+	if(IsInAirNearWall(WallNormal))
 	{
 		FVector JumpDirection = WallNormal + FVector(0.0f, 0.0f, 10.f); // Jump a little higher
 		ServerLaunchCharacter(WallNormal * WallJumpStrength);
 		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(WallNormal * WallJumpStrength, false, false);
 	}
+}
+
+void UShooterCharacterMovement::DoWallJump(FVector Direction)
+{
+	FVector WallNormal;
+	if(IsInAirNearWall(WallNormal))
+	{
+		ServerLaunchCharacter(Direction * WallJumpStrength);
+		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(Direction * WallJumpStrength, false, false);
+	}
+}
+
+void UShooterCharacterMovement::CharacterSideLean(const float SideLeanAmount) const
+{
+	AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;			
+	if(PlayerController)
+	{
+		const FRotator CurrentRot = PlayerController->GetControlRotation();
+		PlayerController->SetControlRotation( FRotator(CurrentRot.Pitch, CurrentRot.Yaw, SideLeanAmount));
+	}
+}
+
+void UShooterCharacterMovement::SetWallRun(const bool bNewIsWallRunning, const FVector NewWallNormal)
+{
+	ClearWallRunTimer();	// Clear pending timer that handle max wall run allowed time
+	
+	WallNormal = NewWallNormal;
+	bIsWallRunning = bNewIsWallRunning;
+	
+	if(bIsWallRunning)	// Enter wall run
+	{
+		SetMovementMode(MOVE_Flying);
+		
+		if(PawnOwner->IsLocallyControlled())
+		{
+			// Lean in the opposite wall direction
+			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+			WallRunSide = FMath::Sign(FVector::CrossProduct(WallNormal, PawnOwner->GetActorForwardVector()).Z);
+			CharacterSideLean(-10.0f * WallRunSide);
+
+			// Set max wall run timer
+			GetWorld()->GetTimerManager().SetTimer(WallRunTimerHandle, this, &UShooterCharacterMovement::StopWallRun, MaxWallRunTime, false);
+		}
+		// Velocity.Z = 0.0;
+	}
+	else	// Exit wall run
+	{
+		SetMovementMode(MOVE_Falling);
+		if(PawnOwner->IsLocallyControlled())
+		{
+			CharacterSideLean(0.0f);
+		}
+	}	
+}
+
+void UShooterCharacterMovement::ClearWallRunTimer()
+{
+	GetWorld()->GetTimerManager().ClearTimer(WallRunTimerHandle);
+	WallRunTimerHandle.Invalidate();
+	GetWorld()->GetTimerManager().ClearAllTimersForObject(this);	// WORKAROUND: Invalidate does not work, have to clear all timers
+}
+
+void UShooterCharacterMovement::StopWallRun()
+{
+	DoNormalWallJump();
 }
 
 void UShooterCharacterMovement::DoTeleport()
@@ -228,6 +361,7 @@ void UShooterCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)
 
 	bWantsToTeleport = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
 	bWantsToJetpack = (Flags&FSavedMove_Character::FLAG_Custom_1) != 0;
+	bWantsToWallRun = (Flags&FSavedMove_Character::FLAG_Custom_2) != 0;
 }
 
 class FNetworkPredictionData_Client* UShooterCharacterMovement::GetPredictionData_Client() const
@@ -258,11 +392,27 @@ void UShooterCharacterMovement::ServerLaunchCharacter_Implementation(const FVect
 		CharacterOwner->LaunchCharacter(Direction, false, false);
 }
 
+bool UShooterCharacterMovement::CanWallRun()
+{
+	const float Speed = FVector2D(CharacterOwner->GetVelocity().X, CharacterOwner->GetVelocity().Y).Size();
+
+	if(!bIsWallRunning && Velocity.Z > 0) return false;	// Only attach to wall when falling
+	
+	return (bWallRunEnable && IsInAirNearWall(WallNormal)) && (Speed > MinSpeedToWallRun);	// Cannot wall run too slow
+}
+
+void UShooterCharacterMovement::DoWallRun(bool bNewWantsToWallRun)
+{
+	bWantsToWallRun = bNewWantsToWallRun;
+}
+
 void FSavedMove_ExtendedMovement::Clear()
 {
 	Super::Clear();
 	bSavedWantsToTeleport = 0;
 	bSavedWantsToJetpack = 0;
+	bSavedWantsToWallRun = 0;
+	bSavedIsWallRunning = 0;
 }
 
 uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
@@ -271,6 +421,7 @@ uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
 
 	if(bSavedWantsToTeleport) Result |= FLAG_Custom_0;
 	if(bSavedWantsToJetpack) Result |= FLAG_Custom_1;
+	if(bSavedWantsToWallRun) Result |= FLAG_Custom_2;
 	
 	return Result;
 }
@@ -289,6 +440,16 @@ bool FSavedMove_ExtendedMovement::CanCombineWith(const FSavedMovePtr& NewMove, A
 	{
 		return false;
 	}
+
+	// Wall run
+	if (bSavedWantsToWallRun != ((FSavedMove_ExtendedMovement*)&NewMove)->bSavedWantsToWallRun)
+	{
+		return false;
+	}
+	if (bSavedIsWallRunning != ((FSavedMove_ExtendedMovement*)&NewMove)->bSavedIsWallRunning)
+	{
+		return false;
+	}
 	
 	return Super::CanCombineWith(NewMove, Character, MaxDelta);
 }
@@ -304,6 +465,8 @@ void FSavedMove_ExtendedMovement::SetMoveFor(ACharacter* Character, float InDelt
 		bSavedWantsToTeleport = CharMov->bWantsToTeleport;
 		SavedJetpackFuel = CharMov->JetpackFuel;
 		bSavedWantsToJetpack = CharMov->bWantsToJetpack;
+		bSavedWantsToWallRun = CharMov->bWantsToWallRun;
+		bSavedIsWallRunning = CharMov->bIsWallRunning;
 	}
 }
 
@@ -319,6 +482,8 @@ void FSavedMove_ExtendedMovement::PrepMoveFor(class ACharacter* Character)
 		CharMov->JetpackFuel = SavedJetpackFuel;
 		CharMov->bWantsToTeleport = bSavedWantsToTeleport;
 		CharMov->bWantsToJetpack = bSavedWantsToJetpack;
+		CharMov->bWantsToWallRun = bSavedWantsToWallRun;
+		CharMov->bIsWallRunning = bSavedIsWallRunning;
 	}
 }
 

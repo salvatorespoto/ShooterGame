@@ -17,9 +17,10 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	virtual void UpdateFromCompressedFlags(uint8 Flags) override;
 
 	virtual class FNetworkPredictionData_Client* GetPredictionData_Client() const override;
-
 	
-    virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
+	virtual void GetLifetimeReplicatedProps(::TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	
+	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override;
 	
 	virtual float GetMaxSpeed() const override;
 
@@ -33,6 +34,12 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** [Server] Set the current moving direction */
 	UFUNCTION(Unreliable, Server, WithValidation)
     void ServerSetMoveDirection(const FVector& MoveDir);
+
+	/** [Local] The character lean on the side (camera roll) of SideLeanAmount degrees */
+	void CharacterSideLean(float SideLeanAmount) const;
+
+	
+	//// TELEPORT ////
 	
 	/** Character teleport */
 	bool bWantsToTeleport : 1;
@@ -40,6 +47,7 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** Teleport character forward of "distance" units */
 	void DoTeleport();
 
+	
 	//// JETPACK ////
 	
 	/** Character wants to activate the jetpack */
@@ -99,14 +107,62 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	float WallJumpStrength;
 	
 	/** Check if the character is in the air and near a wall */
-	bool IsInAirNearWall(FVector& WallNormal) const;
+	bool IsInAirNearWall(FVector& WallNormal);
 	
-	/** [Server] + [Local] The character execute  a wall jump */ 
-	void DoWallJump() const;
-	
+	/** [Server] + [Local] The character execute a wall jump in the wall normal direction */ 
+	void DoNormalWallJump();
+
+	/** [Server] + [Local] The character execute a wall jump in the direction Direction */
+	void DoWallJump(FVector Direction);
+
 	/** [Server] Launch the character */
 	UFUNCTION(Reliable, Server, WithValidation)
     void ServerLaunchCharacter(const FVector& Direction) const;
+
+
+	//// Wall run ////
+
+	/** The character can to run on the walls */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	bool bWallRunEnable;
+	
+	/** Maximum time a character can run on the wall */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	float MaxWallRunTime;
+
+	/** Timer that handles the max wall run time */
+	FTimerHandle WallRunTimerHandle;
+	
+	/** Minimum speed required to run on the walls */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	float MinSpeedToWallRun;
+
+	/** The character wants wall run */
+	bool bWantsToWallRun;
+	
+	/** The character is currently wall running*/
+	bool bIsWallRunning;
+	
+	/** The wall normal while wall running */
+	FVector WallNormal;
+
+	/** The current wall is on the left or the right ? */
+	float WallRunSide;
+
+	/** Check if yhe character can wall run */
+	bool CanWallRun();
+	
+	/** The character activates wall run */
+	void DoWallRun(bool bWantsToWallRun);
+
+	/** Start/Stop wall running movement */
+	void SetWallRun(bool bNewIsWallRunning, FVector NewWallNormal);
+
+	/** Stop wall running */
+	void StopWallRun();
+
+	/** Clear the pending timer that handle the maximum allowed wall run time */
+	void ClearWallRunTimer();
 };
 
 class FSavedMove_ExtendedMovement : public FSavedMove_Character
@@ -136,6 +192,15 @@ public:
 
 	/** Character moving direction */
 	FVector SavedMoveDirection;
+
+	
+	//// Wall run
+
+	/** Character wants to wall run */
+	uint8 bSavedWantsToWallRun : 1;
+
+	/** Character is currently wall running */
+	uint8 bSavedIsWallRunning : 1;
 };
 
 class FNetworkPredictionData_Client_ExtendedMovement : public FNetworkPredictionData_Client_Character
