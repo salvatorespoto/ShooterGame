@@ -107,7 +107,7 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	float WallJumpStrength;
 	
 	/** Check if the character is in the air and near a wall */
-	bool IsInAirNearWall(FVector& WallNormal);
+	bool IsInAirNearWall(FVector& NewWallNormal);
 	
 	/** [Server] + [Local] The character execute a wall jump in the wall normal direction */ 
 	void DoNormalWallJump();

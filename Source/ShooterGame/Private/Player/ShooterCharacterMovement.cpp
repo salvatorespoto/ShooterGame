@@ -143,14 +143,14 @@ float UShooterCharacterMovement::GetMaxSpeed() const
 
 float UShooterCharacterMovement::GetMaxAcceleration() const
 {
-	float MaxAcceleration = Super::GetMaxAcceleration();
+	float NewMaxAcceleration = Super::GetMaxAcceleration();
 	
 	if (bIsJetpackActive == true && bWantsToJetpack == true)
 	{
-		MaxAcceleration *= JetpackAccelerationModifier;
+		NewMaxAcceleration *= JetpackAccelerationModifier;
 	}
 	
-	return MaxAcceleration;
+	return NewMaxAcceleration;
 }
 
 FVector UShooterCharacterMovement::NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity, float DeltaTime) const
@@ -207,7 +207,7 @@ void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
 	}
 }
 
-bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal)
+bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 {
 	if(IsMovingOnGround()) return false;
 	
@@ -236,12 +236,12 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal)
 				Wall->ActorLineTraceSingle(OutHit, Location, Location + TestDir, ECC_WorldStatic, CollisionParams);
 				if(OutHit.Normal.IsZero()) continue; // No hit in this direction
 				
-				if(WallNormal.IsZero()) WallNormal = OutHit.Normal; // First hit 
+				if(NewWallNormal.IsZero()) NewWallNormal = OutHit.Normal; // First hit 
 
 				float NewImpactDistance = (OutHit.ImpactPoint - Location).Size(); 
 				if(ImpactDistance == 0 || NewImpactDistance < ImpactDistance ) // Check if this is is better than the previous one
 				{
-					WallNormal = OutHit.Normal;
+					NewWallNormal = OutHit.Normal;
 					HitPoint = OutHit.ImpactPoint;
 					ImpactDistance = NewImpactDistance;
 					bFound = true;
@@ -251,13 +251,13 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& WallNormal)
 			if(!bFound) continue; // No valid hit found -> Test next colliding volume
 
 			// Skip bounding volume that are not vertical
-			if(FMath::IsNearlyZero(WallNormal.X) && FMath::IsNearlyZero(WallNormal.Y)) continue; // Skip ceil and floor
-			if(WallNormal.CosineAngle2D(WallNormal) < 0.25*PI) continue; // Skip "not so vertical" walls 
+			if(FMath::IsNearlyZero(NewWallNormal.X) && FMath::IsNearlyZero(NewWallNormal.Y)) continue; // Skip ceil and floor
+			if(NewWallNormal.CosineAngle2D(NewWallNormal) < 0.25*PI) continue; // Skip "not so vertical" walls 
 			
 			// DrawDebugDirectionalArrow(GetWorld(), HitPoint, HitPoint + WallNormal * 100.0f, 120.f, FColor::Magenta, true, -1.f, 0, 5.f);
 
 			// Update wall side due the character can turn 180 while wall running
-			float NewWallRunSide = FMath::Sign(FVector::CrossProduct(WallNormal, PawnOwner->GetActorForwardVector()).Z);
+			float NewWallRunSide = FMath::Sign(FVector::CrossProduct(NewWallNormal, PawnOwner->GetActorForwardVector()).Z);
 			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
 			if(PlayerController && NewWallRunSide != WallRunSide)
 			{
