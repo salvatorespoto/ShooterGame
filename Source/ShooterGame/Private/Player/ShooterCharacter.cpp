@@ -9,6 +9,7 @@
 #include "Animation/AnimInstance.h"
 #include "Sound/SoundNodeLocalPlayer.h"
 #include "AudioThread.h"
+#include "ShooterPickup_Ammo.h"
 
 static int32 NetVisualizeRelevancyTestPoints = 0;
 FAutoConsoleVariableRef CVarNetVisualizeRelevancyTestPoints(
@@ -263,7 +264,7 @@ float AShooterCharacter::TakeDamage(float Damage, struct FDamageEvent const& Dam
 	{
 		return 0.f;
 	}
-
+	
 	if (Health <= 0.f)
 	{
 		return 0.f;
@@ -367,6 +368,9 @@ void AShooterCharacter::OnDeath(float KillingDamage, struct FDamageEvent const& 
 		UGameplayStatics::PlaySoundAtLocation(this, DeathSound, GetActorLocation());
 	}
 
+	// Leave player ammo as pickup
+	SpawnAmmo();
+	
 	// remove all weapons
 	DestroyInventory();
 
@@ -604,6 +608,30 @@ void AShooterCharacter::DestroyInventory()
 	}
 }
 
+void AShooterCharacter::SpawnAmmo_Implementation()
+{
+	UObject* AACtor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Pickups/Pickup_DroppedAmmoGun.Pickup_DroppedAmmoGun")));
+		
+	UBlueprint* GeneratedBP = Cast<UBlueprint>(AACtor);
+	if (!AACtor) return;
+	
+	UClass* SpawnClass = AACtor->StaticClass();
+	if (SpawnClass == NULL) return;
+    
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	AShooterPickup_Ammo* DroppedAmmo = Cast<AShooterPickup_Ammo>(GetWorld()->SpawnActor<AActor>(GeneratedBP->GeneratedClass, GetActorLocation(), GetActorRotation(), SpawnParams));
+	const int32 CurrentAmmo = GetInventoryWeapon(0)->GetCurrentAmmo();
+	DroppedAmmo->SetAmmoClips(CurrentAmmo / GetInventoryWeapon(0)->GetAmmoPerClip());
+	DroppedAmmo->SetAdditionalBullets(CurrentAmmo % GetInventoryWeapon(0)->GetAmmoPerClip());
+}
+
+bool AShooterCharacter::SpawnAmmo_Validate()
+{
+	return true;
+}
+
 void AShooterCharacter::AddWeapon(AShooterWeapon* Weapon)
 {
 	if (Weapon && GetLocalRole() == ROLE_Authority)
@@ -694,6 +722,7 @@ void AShooterCharacter::SetCurrentWeapon(AShooterWeapon* NewWeapon, AShooterWeap
 		NewWeapon->OnEquip(LastWeapon);
 	}
 }
+
 
 
 //////////////////////////////////////////////////////////////////////////

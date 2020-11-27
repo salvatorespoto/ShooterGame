@@ -117,6 +117,8 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 	{
 		SetWallRun(false, WallNormal);
 	}
+
+	
 }
 
 float UShooterCharacterMovement::GetMaxSpeed() const

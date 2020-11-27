@@ -8,11 +8,22 @@
 AShooterPickup_Ammo::AShooterPickup_Ammo(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
 	AmmoClips = 2;
+	AdditionalBullets = 0;
 }
 
 bool AShooterPickup_Ammo::IsForWeapon(UClass* WeaponClass)
 {
 	return WeaponType->IsChildOf(WeaponClass);
+}
+
+void AShooterPickup_Ammo::SetAmmoClips(int32 NClips)
+{
+	AmmoClips = NClips;
+}
+
+void AShooterPickup_Ammo::SetAdditionalBullets(int32 NBullets)
+{
+	AdditionalBullets = NBullets;
 }
 
 bool AShooterPickup_Ammo::CanBePickedUp(AShooterCharacter* TestPawn) const
@@ -31,7 +42,7 @@ void AShooterPickup_Ammo::GivePickupTo(class AShooterCharacter* Pawn)
 	AShooterWeapon* Weapon = (Pawn ? Pawn->FindWeapon(WeaponType) : NULL);
 	if (Weapon)
 	{
-		int32 Qty = AmmoClips * Weapon->GetAmmoPerClip();
+		int32 Qty = AmmoClips * Weapon->GetAmmoPerClip() + AdditionalBullets;
 		Weapon->GiveAmmo(Qty);
 
 		// Fire event for collected ammo

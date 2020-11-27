@@ -452,6 +452,7 @@ public:
 	virtual void PreReplication(IRepChangedPropertyTracker & ChangedPropertyTracker) override;
 
 protected:
+	
 	/** notification when killed, for both the server and client. */
 	virtual void OnDeath(float KillingDamage, struct FDamageEvent const& DamageEvent, class APawn* InstigatingPawn, class AActor* DamageCauser);
 
@@ -488,10 +489,14 @@ protected:
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerEquipWeapon(class AShooterWeapon* NewWeapon);
 
+	/** [server] spawns all actor's ammo as pickups */
+	UFUNCTION(reliable, server, WithValidation)
+	void SpawnAmmo();
+	
 	/** update targeting state */
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerSetTargeting(bool bNewTargeting);
-
+	
 	/** update running state */
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerSetRunning(bool bNewRunning, bool bToggle);
