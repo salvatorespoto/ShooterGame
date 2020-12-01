@@ -32,6 +32,7 @@ AShooterHUD::AShooterHUD(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	static ConstructorHelpers::FObjectFinder<UTexture2D> HUDMainTextureOb(TEXT("/Game/UI/HUD/HUDMain"));
 	static ConstructorHelpers::FObjectFinder<UTexture2D> HUDAssets02TextureOb(TEXT("/Game/UI/HUD/HUDAssets02"));
 	static ConstructorHelpers::FObjectFinder<UTexture2D> LowHealthOverlayTextureOb(TEXT("/Game/UI/HUD/LowHealthOverlay"));
+	static ConstructorHelpers::FObjectFinder<UTexture2D> FrostOverlayTextureOb(TEXT("/Game/UI/HUD/FrostOverlay.FrostOverlay"));
 
 	// Fonts are not included in dedicated server builds.
 	#if !UE_SERVER
@@ -47,6 +48,7 @@ AShooterHUD::AShooterHUD(const FObjectInitializer& ObjectInitializer) : Super(Ob
 	HUDMainTexture = HUDMainTextureOb.Object;
 	HUDAssets02Texture = HUDAssets02TextureOb.Object;
 	LowHealthOverlayTexture = LowHealthOverlayTextureOb.Object;
+	FrostOverlayTexture = FrostOverlayTextureOb.Object;
 
 	HitNotifyIcon[EShooterHudPosition::Left] = UCanvas::MakeIcon(HitNotifyTexture,  158, 831, 585, 392);	
 	HitNotifyIcon[EShooterHudPosition::FrontLeft] = UCanvas::MakeIcon(HitNotifyTexture, 369, 434, 460, 378);	
@@ -670,9 +672,11 @@ void AShooterHUD::DrawHUD()
 		}
 	}
 
+	// Left frozen overlay if required
+	DrawFrozenOverlay();
+	
 	// Render the info messages such as wating to respawn - these will be drawn below any 'killed player' message.
 	ShowInfoItems(MessageOffset, 1.0f);
-	
 }
 
 void AShooterHUD::DrawDebugInfoString(const FString& Text, float PosX, float PosY, bool bAlignLeft, bool bAlignTop, const FColor& TextColor)
@@ -990,6 +994,24 @@ void AShooterHUD::DrawHitIndicator()
 				StartX + (HitNotifyIcon[i].U - HitNotifyTexture->GetSizeX() / 2 + Offsets[i].X) * ScaleUI,
 				StartY + (HitNotifyIcon[i].V - HitNotifyTexture->GetSizeY() / 2 + Offsets[i].Y) * ScaleUI,
 				ScaleUI);
+		}
+	}
+}
+
+void AShooterHUD::DrawFrozenOverlay()
+{
+	AShooterPlayerController* PCOwner = Cast<AShooterPlayerController>(PlayerOwner);
+	if(PCOwner)
+	{
+		AShooterCharacter* Pawn =  Cast<AShooterCharacter>(PCOwner->GetPawn());
+		if(Pawn && Pawn->IsFrozen())
+		{
+			// Full screen frost overlay
+			Canvas->PopSafeZoneTransform();
+			FCanvasTileItem TileItem( FVector2D( 0, 0 ), FrostOverlayTexture->Resource, FVector2D( Canvas->ClipX, Canvas->ClipY ), FLinearColor( 0.5f, 0.5f, 1.0f, 1.0f ) );
+			TileItem.BlendMode = SE_BLEND_Translucent;
+			Canvas->DrawItem( TileItem );
+			Canvas->ApplySafeZoneTransform();
 		}
 	}
 }

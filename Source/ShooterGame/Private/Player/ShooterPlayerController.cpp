@@ -137,7 +137,7 @@ void AShooterPlayerController::TickActor(float DeltaTime, enum ELevelTick TickTy
 
 	// Is this the first frame after the game has ended
 	if(bGameEndedFrame)
-	{
+	{	
 		bGameEndedFrame = false;
 
 		// ONLY PUT CODE HERE WHICH YOU DON'T WANT TO BE DONE DUE TO HOST LOSS

@@ -115,6 +115,12 @@ class AShooterCharacter : public ACharacter
 
 	/** [server + local] Teleport */
 	void DoTeleport();
+
+	/** The character is currently freezed ? */
+	bool IsFrozen() const;
+	
+	/** [server + local] Set freezer appearance */
+	void SetFrozenAppearance(bool bIsFrozen) const;
 	
 	//////////////////////////////////////////////////////////////////////////
 	// Animations
@@ -181,6 +187,9 @@ class AShooterCharacter : public ACharacter
 
 	/** player pressed reload action */
 	void OnReload();
+
+	/** player pressed cycle launcher weapon action */
+	void OnCycleLauncherAmmo();
 
 	/** player pressed jump action */
 	void OnStartJump();

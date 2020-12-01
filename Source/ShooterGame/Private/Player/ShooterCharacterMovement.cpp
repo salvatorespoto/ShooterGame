@@ -10,6 +10,8 @@
 
 UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
+	Super::SetIsReplicated(true);
+
 	AirControl = 0.95f;
 
 	// Teleport
@@ -37,11 +39,17 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	WallRunSide = 0;
 	bIsWallRunning = false;
 	bWantsToWallRun = false;
+
+	// Freezing gun
+	bIsFrozen = false;
+	FrozenTime = 5.0f;
 }
 
 void UShooterCharacterMovement::GetLifetimeReplicatedProps(::TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(UShooterCharacterMovement, bIsFrozen);
+	DOREPLIFETIME(UShooterCharacterMovement, FrozenLookDirection);
 }
 
 void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
@@ -53,6 +61,23 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		return;
 	}
 
+	if(bIsFrozen && (CharacterOwner->GetLocalRole() == ROLE_Authority || CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy))
+	{
+		StopMovementImmediately();
+		DisableMovement();
+		
+		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+		PlayerController->SetControlRotation(FrozenLookDirection);
+		PlayerController->SetIgnoreLookInput(true);
+		return;
+	}
+
+	if(!bIsFrozen && PawnOwner->IsLocallyControlled())
+	{
+		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+		PlayerController->SetIgnoreLookInput(false);
+	}
+	
 	if (PawnOwner->IsLocallyControlled())
 	{
 		MoveDirection = PawnOwner->GetLastMovementInputVector();
@@ -117,8 +142,6 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 	{
 		SetWallRun(false, WallNormal);
 	}
-
-	
 }
 
 float UShooterCharacterMovement::GetMaxSpeed() const
@@ -408,6 +431,69 @@ void UShooterCharacterMovement::DoWallRun(bool bNewWantsToWallRun)
 	bWantsToWallRun = bNewWantsToWallRun;
 }
 
+void UShooterCharacterMovement::ServerSetFrozen_Implementation(bool NewIsFrozen)
+{
+	bIsFrozen = NewIsFrozen;
+	if(bIsFrozen)
+	{
+		Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(true);
+		GetWorld()->GetTimerManager().ClearTimer(FrozenTimer);
+		FrozenTimer.Invalidate();
+		GetWorld()->GetTimerManager().SetTimer(FrozenTimer, this, &UShooterCharacterMovement::UnFreeze, FrozenTime, false);
+		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+		FrozenLookDirection = PlayerController->GetControlRotation();
+		ServerSetFrozenLookDirection(FrozenLookDirection);
+	}	
+}
+
+bool UShooterCharacterMovement::ServerSetFrozen_Validate(bool NewIsFrozen)
+{
+	return true;
+}
+
+void UShooterCharacterMovement::UnFreeze()
+{
+	bIsFrozen = false;
+	Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(false);
+	SetMovementMode(MOVE_Walking);
+}
+
+void UShooterCharacterMovement::OnRep_IsFrozen()
+{
+	//// Freezed or frozen ////
+	if(bIsFrozen)
+	{
+		Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(true);
+		SetMovementMode(MOVE_Walking);
+		
+		if(PawnOwner->IsLocallyControlled())
+		{
+			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+			PlayerController->SetControlRotation(FrozenLookDirection);
+			PlayerController->SetIgnoreLookInput(true);
+		}
+	}
+	else
+	{
+		Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(false);
+		if(PawnOwner->IsLocallyControlled())
+		{
+			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+			PlayerController->SetIgnoreLookInput(false);
+		}
+	}
+}
+
+inline void UShooterCharacterMovement::ServerSetFrozenLookDirection_Implementation(const FRotator NewFrozenLookDirection)
+{
+	FrozenLookDirection = NewFrozenLookDirection; 
+}
+
+inline bool UShooterCharacterMovement::ServerSetFrozenLookDirection_Validate(FRotator NewFrozenLookDirection)
+{
+	return true;
+}
+
 void FSavedMove_ExtendedMovement::Clear()
 {
 	Super::Clear();
@@ -415,6 +501,10 @@ void FSavedMove_ExtendedMovement::Clear()
 	bSavedWantsToJetpack = 0;
 	bSavedWantsToWallRun = 0;
 	bSavedIsWallRunning = 0;
+	SavedMoveDirection = FVector(0);
+	SavedJetpackFuel = 0;
+	bSavedIsFrozen = 0;
+	SavedFrozenLookDirection = FRotator(0); 
 }
 
 uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
@@ -452,7 +542,17 @@ bool FSavedMove_ExtendedMovement::CanCombineWith(const FSavedMovePtr& NewMove, A
 	{
 		return false;
 	}
-	
+
+	// Freezing gun 
+	if (bSavedIsFrozen != ((FSavedMove_ExtendedMovement*)&NewMove)->bSavedIsFrozen)
+	{
+		return false;
+	}
+	if (SavedFrozenLookDirection != ((FSavedMove_ExtendedMovement*)&NewMove)->SavedFrozenLookDirection)
+	{
+		return false;
+	}
+
 	return Super::CanCombineWith(NewMove, Character, MaxDelta);
 }
 
@@ -469,6 +569,8 @@ void FSavedMove_ExtendedMovement::SetMoveFor(ACharacter* Character, float InDelt
 		bSavedWantsToJetpack = CharMov->bWantsToJetpack;
 		bSavedWantsToWallRun = CharMov->bWantsToWallRun;
 		bSavedIsWallRunning = CharMov->bIsWallRunning;
+		bSavedIsFrozen = CharMov->bIsFrozen;
+		SavedFrozenLookDirection = CharMov->FrozenLookDirection; 
 	}
 }
 
@@ -486,6 +588,8 @@ void FSavedMove_ExtendedMovement::PrepMoveFor(class ACharacter* Character)
 		CharMov->bWantsToJetpack = bSavedWantsToJetpack;
 		CharMov->bWantsToWallRun = bSavedWantsToWallRun;
 		CharMov->bIsWallRunning = bSavedIsWallRunning;
+		CharMov->bIsFrozen = bSavedIsFrozen;
+		CharMov->FrozenLookDirection = SavedFrozenLookDirection; 
 	}
 }
 

@@ -10,6 +10,7 @@
 #include "Sound/SoundNodeLocalPlayer.h"
 #include "AudioThread.h"
 #include "ShooterPickup_Ammo.h"
+#include "ShooterWeapon_Projectile.h"
 
 static int32 NetVisualizeRelevancyTestPoints = 0;
 FAutoConsoleVariableRef CVarNetVisualizeRelevancyTestPoints(
@@ -267,9 +268,17 @@ float AShooterCharacter::TakeDamage(float Damage, struct FDamageEvent const& Dam
 	
 	if (Health <= 0.f)
 	{
-		return 0.f;
+		return 0.f; 
 	}
-
+	
+	// Handle freezing ammo
+	if((DamageEvent.DamageTypeClass->GetName()).Equals("DmgType_Freeze_C"))
+	{
+		UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+		if(MoveComp) MoveComp->ServerSetFrozen(true);
+		return 0.f;	// No damage from the freezing gun
+	}
+	
 	// Modify based on game rules.
 	AShooterGameMode* const Game = GetWorld()->GetAuthGameMode<AShooterGameMode>();
 	Damage = Game ? Game->ModifyDamage(Damage, this, DamageEvent, EventInstigator, DamageCauser) : 0.f;
@@ -754,7 +763,7 @@ void AShooterCharacter::StopWeaponFire()
 
 bool AShooterCharacter::CanFire() const
 {
-	return IsAlive();
+	return IsAlive() && !IsFrozen();// Freezed character cannot fire
 }
 
 bool AShooterCharacter::CanReload() const
@@ -1003,6 +1012,9 @@ void AShooterCharacter::OnStopTargeting()
 
 void AShooterCharacter::OnNextWeapon()
 {
+	// Freezed character cannot change weapon
+	if(IsFrozen()) return;
+	
 	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
 	if (MyPC && MyPC->IsGameInputAllowed())
 	{
@@ -1017,6 +1029,9 @@ void AShooterCharacter::OnNextWeapon()
 
 void AShooterCharacter::OnPrevWeapon()
 {
+	// Freezed character cannot change weapon
+	if(IsFrozen()) return;
+	
 	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
 	if (MyPC && MyPC->IsGameInputAllowed())
 	{
@@ -1117,6 +1132,19 @@ void AShooterCharacter::DoTeleport()
 	{
 		MoveComp->DoTeleport();
 	}
+}
+
+bool AShooterCharacter::IsFrozen() const
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	if(MoveComp) return MoveComp->bIsFrozen;
+	else return false;
+}
+
+void AShooterCharacter::SetFrozenAppearance(const bool bIsFrozen) const
+{
+	GetPawnMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
+	GetWeapon()->GetWeaponMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
 }
 
 void AShooterCharacter::Tick(float DeltaSeconds)

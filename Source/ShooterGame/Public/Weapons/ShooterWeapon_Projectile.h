@@ -50,7 +50,7 @@ class AShooterWeapon_Projectile : public AShooterWeapon
 
 	/** apply config on projectile */
 	void ApplyWeaponConfig(FProjectileWeaponData& Data);
-
+	
 protected:
 
 	virtual EAmmoType GetAmmoType() const override

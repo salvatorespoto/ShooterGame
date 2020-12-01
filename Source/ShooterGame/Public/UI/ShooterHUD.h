@@ -269,6 +269,10 @@ protected:
 	UPROPERTY()
 	UTexture2D* LowHealthOverlayTexture;
 
+	/** Overlay shown when the player is frozen. */
+	UPROPERTY()
+	UTexture2D* FrostOverlayTexture;
+	
 	/** Large font - used for ammo display etc. */
 	UPROPERTY()
 	UFont* BigFont;
@@ -337,6 +341,9 @@ protected:
 	
 	/** Draws hit indicator. */
 	void DrawHitIndicator();
+	
+	/** Draws frozen overlay. */
+	void DrawFrozenOverlay();
 
 	/** Draw death messages. */
 	void DrawDeathMessages();

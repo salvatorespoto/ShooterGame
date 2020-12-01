@@ -27,7 +27,7 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	virtual float GetMaxAcceleration() const override;
 
 	virtual FVector NewFallVelocity(const FVector& InitialVelocity, const FVector& Gravity, float DeltaTime) const override;
-
+		
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	FVector MoveDirection;
 	
@@ -154,7 +154,7 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	
 	/** The character activates wall run */
 	void DoWallRun(bool bWantsToWallRun);
-
+	
 	/** Start/Stop wall running movement */
 	void SetWallRun(bool bNewIsWallRunning, FVector NewWallNormal);
 
@@ -163,6 +163,39 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 
 	/** Clear the pending timer that handle the maximum allowed wall run time */
 	void ClearWallRunTimer();
+
+
+	//// Freezing gun ////
+	
+	/** Character is frozen */
+	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_IsFrozen)
+	bool bIsFrozen;
+
+	/** Called on bIsFrozen replication */
+	UFUNCTION()
+    void OnRep_IsFrozen();
+
+	/** [Server] Set the character frozen state */
+	UFUNCTION(Reliable, Server, WithValidation)
+    void ServerSetFrozen(bool NewIsFrozen);
+	
+	/** Character last looking direction before been frozen */
+	UPROPERTY(Replicated)
+	FRotator FrozenLookDirection;
+	
+	/** [Server]  Set the character last looking direction before been */
+	UFUNCTION(Unreliable, Server, WithValidation)
+    void ServerSetFrozenLookDirection(FRotator NewFrozenLookDirection);
+
+	/** Character freeze time */
+	UPROPERTY(EditDefaultsOnly)
+	float FrozenTime;
+	
+	/** Handle the freeze time */
+	FTimerHandle FrozenTimer;
+
+	/** Unfreeze the character */
+	void UnFreeze();
 };
 
 class FSavedMove_ExtendedMovement : public FSavedMove_Character
@@ -192,15 +225,24 @@ public:
 
 	/** Character moving direction */
 	FVector SavedMoveDirection;
-
 	
-	//// Wall run
+	
+	//// Wall run ////
 
 	/** Character wants to wall run */
 	uint8 bSavedWantsToWallRun : 1;
 
 	/** Character is currently wall running */
 	uint8 bSavedIsWallRunning : 1;
+
+	
+	//// Freezing gun ////
+
+	/** Character is frozen */
+	bool  bSavedIsFrozen;
+
+	/** Character last looking direction before been frozen */
+	FRotator SavedFrozenLookDirection;
 };
 
 class FNetworkPredictionData_Client_ExtendedMovement : public FNetworkPredictionData_Client_Character
