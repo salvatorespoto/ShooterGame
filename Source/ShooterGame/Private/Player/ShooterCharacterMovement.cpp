@@ -19,13 +19,12 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	TeleportDistance = 1000.0f;	// 100 unreal units = 1 meter
 	
 	// Jetpack
-	bIsJetpackEnabled = true;
 	bIsJetpackActive = false;
-	JetpackForce = 1500.f;
-	JetpackAccelerationModifier = 1.5f;
+	JetpackForce = 700.f;
+	JetpackAccelerationModifier = 2.5f;
 	MaxJetpackFuel = 100.0f;
 	JetpackFuel = MaxJetpackFuel;
-	JetpackFuelConsumptionRate = 1.0f;
+	JetpackFuelConsumptionRate = 10.0f;
 	JetpackFuelRefillRate = 10.0f;
 	bWantsToJetpack = false;
 	
@@ -63,7 +62,10 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 	}
 
 	AController* Controller = PawnOwner->GetController();
-		
+
+	
+	//// HANDLE FREEZING HIT ////
+	
 	if(bIsFrozen && (CharacterOwner->GetLocalRole() == ROLE_Authority || CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy))
 	{
 		StopMovementImmediately();
@@ -74,21 +76,8 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 
 		return;
 	}
-
-	if(!bIsFrozen && PawnOwner->IsLocallyControlled())
-	{
-		Controller->SetIgnoreLookInput(false);
-	}
+	if(!bIsFrozen && PawnOwner->IsLocallyControlled()) Controller->SetIgnoreLookInput(false);
 	
-	if (PawnOwner->IsLocallyControlled())
-	{
-		MoveDirection = PawnOwner->GetLastMovementInputVector();
-		if (GetNetMode() == ENetMode::NM_Client)
-		{
-			ServerSetMoveDirection(MoveDirection);
-		}
-	}
-
 	
 	//// TELEPORT ////
 	
@@ -101,7 +90,20 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		bWantsToTeleport = false;
 	}
 
-	// Jetpack movement executed both on clients and server 
+
+	//// JETPACK ////
+
+	// Autonomous proxies send the move direction to the server, used while using jetpack
+	if (PawnOwner->IsLocallyControlled())
+	{
+		MoveDirection = PawnOwner->GetLastMovementInputVector();
+		if (GetNetMode() == ENetMode::NM_Client)
+		{
+			ServerSetMoveDirection(MoveDirection);
+		}
+	}
+	
+	// Jetpack movement executed both on autonomous proxy clients and server 
 	if (bWantsToJetpack == true && CanJetpack() == true)
 	{
 		bIsJetpackActive = true;	
@@ -124,9 +126,9 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 	RefillJetpack(DeltaSeconds);
 
 	
-	//// Wall run ////
+	//// WALL RUN ////
 	
-	if(IsMovingOnGround()) // Reset wall jump variables when walking on the ground
+	if(IsMovingOnGround()) // Reset wall jump variables when moving on the ground
 	{
 		WallNormal = FVector(0.0f);
 		WallRunSide = 0;
@@ -179,20 +181,16 @@ FVector UShooterCharacterMovement::NewFallVelocity(const FVector& InitialVelocit
 {
 	if (bIsJetpackActive == true)
 	{
-		// Better scale down the gravity when using the jetpack
+		// Scale down the gravity when using the jetpack
 		return Super::NewFallVelocity(InitialVelocity, (Gravity * GravityScaleWhileJetpack), DeltaTime);
 	}
 	if (bIsWallRunning)
 	{
+		// No gravity when wall running
 		return Super::NewFallVelocity(InitialVelocity, FVector(0.0f), DeltaTime);
 	}
 	
 	return Super::NewFallVelocity(InitialVelocity, Gravity, DeltaTime);
-}
-
-bool UShooterCharacterMovement::ServerSetMoveDirection_Validate(const FVector& MoveDir)
-{
-	return true;
 }
 
 void UShooterCharacterMovement::ServerSetMoveDirection_Implementation(const FVector& MoveDir)
@@ -200,7 +198,12 @@ void UShooterCharacterMovement::ServerSetMoveDirection_Implementation(const FVec
 	MoveDirection = MoveDir;
 }
 
-void UShooterCharacterMovement::DoActivateJetpack(bool bActivate)
+bool UShooterCharacterMovement::ServerSetMoveDirection_Validate(const FVector& MoveDir)
+{
+	return true;
+}
+
+void UShooterCharacterMovement::DoActivateJetpack(const bool bActivate)
 {
 	bWantsToJetpack = bActivate;
 }
@@ -215,7 +218,7 @@ bool UShooterCharacterMovement::CanJetpack() const
 	return JetpackFuel > 0.0f;
 }
 
-void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
+void UShooterCharacterMovement::RefillJetpack(const float DeltaSeconds)
 {
 	if (IsMovingOnGround())
 	{
@@ -239,18 +242,17 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 	TArray<AActor*> OverlappedActors;
 	if(UKismetSystemLibrary::SphereOverlapActors(GetWorld(), Location, Radius, ObjectTypes, ABlockingVolume::StaticClass(), IgnoredActors, OverlappedActors))
 	{	
-		// Can overlap more than one bounding volume (es. ceil and side wall), look for a valid overlap
+		// Can overlap more than one blocking volume (es. ceil and side wall), look for a valid overlap
 		for(const AActor* Wall : OverlappedActors)
 		{
-			if (!Wall->ActorHasTag("Wall")) continue;	// Only objects tagged as "Wall" can be runned
+			if (!Wall->ActorHasTag("Wall")) continue;	// Only objects tagged as "Wall" can be run
 			
-
 			// Look for the best collision point in the four direction respect to the actor: forward, left, back, right
 			FVector TestDirs[4] = { CharacterOwner->GetActorForwardVector() * Radius, CharacterOwner->GetActorRightVector() * Radius, -CharacterOwner->GetActorForwardVector() * Radius, -CharacterOwner->GetActorRightVector() * Radius };
 			FHitResult OutHit;
 			FCollisionQueryParams CollisionParams;
 			float ImpactDistance = 0;
-			FVector HitPoint;
+			// DEBUG FVector HitPoint; 
 			bool bFound = false;
 			for(FVector TestDir : TestDirs)
 			{
@@ -263,7 +265,7 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 				if(ImpactDistance == 0 || NewImpactDistance < ImpactDistance ) // Check if this is is better than the previous one
 				{
 					NewWallNormal = OutHit.Normal;
-					HitPoint = OutHit.ImpactPoint;
+					// DEBUG HitPoint = OutHit.ImpactPoint;
 					ImpactDistance = NewImpactDistance;
 					bFound = true;
 				} 
@@ -275,7 +277,7 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 			if(FMath::IsNearlyZero(NewWallNormal.X) && FMath::IsNearlyZero(NewWallNormal.Y)) continue; // Skip ceil and floor
 			if(NewWallNormal.CosineAngle2D(NewWallNormal) < 0.25*PI) continue; // Skip "not so vertical" walls 
 			
-			// DrawDebugDirectionalArrow(GetWorld(), HitPoint, HitPoint + WallNormal * 100.0f, 120.f, FColor::Magenta, true, -1.f, 0, 5.f);
+			// DEBUG DrawDebugDirectionalArrow(GetWorld(), HitPoint, HitPoint + WallNormal * 100.0f, 120.f, FColor::Magenta, true, -1.f, 0, 5.f);
 
 			// Update wall side due the character can turn 180 while wall running
 			float NewWallRunSide = FMath::Sign(FVector::CrossProduct(NewWallNormal, PawnOwner->GetActorForwardVector()).Z);
@@ -302,8 +304,8 @@ void UShooterCharacterMovement::DoNormalWallJump()
 	
 	if(IsInAirNearWall(NewWallNormal))
 	{
-		FVector JumpDirection = NewWallNormal + FVector(0.0f, 0.0f, 10.f); // Jump a little higher
-		ServerLaunchCharacter(NewWallNormal * WallJumpStrength);
+		const FVector JumpDirection = NewWallNormal + FVector(0.0f, 0.0f, 0.5f); // Jump a little higher
+		ServerLaunchCharacter(JumpDirection * WallJumpStrength);
 		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(NewWallNormal * WallJumpStrength, false, false);
 	}
 }
@@ -342,7 +344,6 @@ void UShooterCharacterMovement::SetWallRun(const bool bNewIsWallRunning, const F
 		if(PawnOwner->IsLocallyControlled())
 		{
 			// Lean in the opposite wall direction
-			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
 			WallRunSide = FMath::Sign(FVector::CrossProduct(WallNormal, PawnOwner->GetActorForwardVector()).Z);
 			CharacterSideLean(-10.0f * WallRunSide);
 
@@ -499,7 +500,7 @@ void FSavedMove_ExtendedMovement::Clear()
 	bSavedIsWallRunning = 0;
 	SavedMoveDirection = FVector(0);
 	SavedJetpackFuel = 0;
-	bSavedIsFrozen = 0;
+	bSavedIsFrozen = false;
 	SavedFrozenLookDirection = FRotator(0); 
 }
 

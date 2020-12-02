@@ -376,7 +376,7 @@ void AShooterCharacter::OnDeath(float KillingDamage, struct FDamageEvent const& 
 	}
 
 	// Leave player ammo as pickup
-	SpawnAmmo();
+	if (GetLocalRole() == ROLE_Authority) SpawnAmmo();
 	
 	// remove all weapons
 	DestroyInventory();
@@ -761,7 +761,7 @@ void AShooterCharacter::StopWeaponFire()
 
 bool AShooterCharacter::CanFire() const
 {
-	return IsAlive() && !IsFrozen();// Freezed character cannot fire
+	return IsAlive() && !IsFrozen(); // Frozen character cannot fire
 }
 
 bool AShooterCharacter::CanReload() const
@@ -1010,8 +1010,7 @@ void AShooterCharacter::OnStopTargeting()
 
 void AShooterCharacter::OnNextWeapon()
 {
-	// Freezed character cannot change weapon
-	if(IsFrozen()) return;
+	if(IsFrozen()) return; // Frozen character cannot change weapon
 	
 	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
 	if (MyPC && MyPC->IsGameInputAllowed())
@@ -1027,8 +1026,7 @@ void AShooterCharacter::OnNextWeapon()
 
 void AShooterCharacter::OnPrevWeapon()
 {
-	// Freezed character cannot change weapon
-	if(IsFrozen()) return;
+	if(IsFrozen()) return; // Frozen character cannot change weapon
 	
 	AShooterPlayerController* MyPC = Cast<AShooterPlayerController>(Controller);
 	if (MyPC && MyPC->IsGameInputAllowed())
@@ -1126,10 +1124,7 @@ void AShooterCharacter::OnDeactivateJetPack()
 void AShooterCharacter::DoTeleport()
 {
 	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
-	if (MoveComp)
-	{
-		MoveComp->DoTeleport();
-	}
+	if (MoveComp) MoveComp->DoTeleport();
 }
 
 bool AShooterCharacter::IsFrozen() const

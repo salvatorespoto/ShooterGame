@@ -60,35 +60,32 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** The jetpack is currently active */
 	bool bIsJetpackActive : 1;
 
-	/** The jetpack is ready and can be activated */
-	UPROPERTY(BlueprintReadOnly, Category = "Jetpack")
-	bool bIsJetpackEnabled;
-
 	/** The jetpack max fuel capacity */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Jetpack", meta = (ClampMin = 0))
 	float MaxJetpackFuel;
 
-	/** The jetpack fuel consuption rate when used */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack")
+	/** The jetpack fuel consumption rate when used (units per second) */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Jetpack", meta = (ClampMin = 0))
 	float JetpackFuelConsumptionRate;
 	
-	/** The jetpack fuel refill rate when on the ground */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack")
+	/** The jetpack fuel refill rate when on the ground (units per second) */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Jetpack", meta = (ClampMin = 0))
 	float JetpackFuelRefillRate;
 
 	/** The jetpack fuel level */
+	UPROPERTY(BlueprintReadOnly, Category = "Character Movement: Jetpack")
 	float JetpackFuel;
 	
-	/** Jetpack force */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Jetpack", AdvancedDisplay)
+	/** Jetpack propulsion force (it's a Z velocity modifier) */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Movement: Jetpack", meta = (ClampMin = 0))
 	float JetpackForce;
 
-	/** Jetpack accelleration modifier */
-	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Jetpack", AdvancedDisplay)
+	/** Jetpack acceleration modifier */
+	UPROPERTY(BlueprintReadWrite, EditAnywhere, Category = "Character Movement: Jetpack")
 	float JetpackAccelerationModifier;
 
-	/** Reduce the gravity when jetpacking */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack", meta = (ClampMin = 0))
+	/** Reduce the gravity while using jetpack */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Jetpack", meta = (ClampMin = 0))
 	float GravityScaleWhileJetpack = 0;
 	
 	/** The player activate the jetpack */
@@ -97,17 +94,17 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** Check if the player is currently using the jetpack */
 	bool IsUsingJetpack() const;
 	
-	/** Ceck if the player can activate the jetpack */
+	/** Check if the player can activate the jetpack */
 	bool CanJetpack() const;
 
-	/** Refill the jetpcka fuel when moving on the ground*/
+	/** Refill the jetpack fuel when moving on the ground*/
 	void RefillJetpack(float DeltaSeconds);
 
 	
-	//// WALL JUMP while jetpacking ////
+	//// WALL JUMP while using jetpack ////
 
 	/** The wall jump strength */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Jetpack")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Wall Jump")
 	float WallJumpStrength;
 	
 	/** Check if the character is in the air and near a wall */
@@ -124,21 +121,21 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
     void ServerLaunchCharacter(const FVector& Direction) const;
 
 
-	//// Wall run ////
+	//// WALL RUN ////
 
 	/** The character can to run on the walls */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Wall Run")
 	bool bWallRunEnable;
 	
 	/** Maximum time a character can run on the wall */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Wall Run")
 	float MaxWallRunTime;
 
 	/** Timer that handles the max wall run time */
 	FTimerHandle WallRunTimerHandle;
 	
 	/** Minimum speed required to run on the walls */
-	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Movement - WallRun")
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Wall Run")
 	float MinSpeedToWallRun;
 
 	/** The character wants wall run */
@@ -169,7 +166,7 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	void ClearWallRunTimer();
 
 
-	//// Freezing gun ////
+	//// FREEZING GUN ////
 	
 	/** Character is frozen */
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing=OnRep_IsFrozen)
@@ -218,8 +215,13 @@ public:
     
     virtual void PrepMoveFor(class ACharacter* Character) override;
 
+	//// TELEPORT ////
+	
 	/** Character teleport */
 	uint8 bSavedWantsToTeleport : 1;
+
+	
+	//// JETPACK  ////
 	
 	/** Character is using jetpack */
 	uint8 bSavedWantsToJetpack : 1;
@@ -231,7 +233,7 @@ public:
 	FVector SavedMoveDirection;
 	
 	
-	//// Wall run ////
+	//// WALL RUN ////
 
 	/** Character wants to wall run */
 	uint8 bSavedWantsToWallRun : 1;
@@ -240,7 +242,7 @@ public:
 	uint8 bSavedIsWallRunning : 1;
 
 	
-	//// Freezing gun ////
+	//// FREEZING HIT ////
 
 	/** Character is frozen */
 	bool  bSavedIsFrozen;

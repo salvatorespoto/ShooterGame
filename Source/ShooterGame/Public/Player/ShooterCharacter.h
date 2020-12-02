@@ -116,7 +116,7 @@ class AShooterCharacter : public ACharacter
 	/** [server + local] Teleport */
 	void DoTeleport();
 
-	/** The character is currently freezed ? */
+	/** The character is currently frozen ? */
 	bool IsFrozen() const;
 	
 	/** [server + local] Set freezer appearance */
