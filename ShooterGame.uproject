@@ -81,16 +81,13 @@
 		}
 	],
 	"TargetPlatforms": [
-		"MacNoEditor",
 		"PS4",
 		"WindowsNoEditor",
 		"XboxOne",
 		"Switch",
 		"Quail",
-		"LinuxNoEditor",
 		"LinuxServer",
 		"LinuxClient",
-		"LinuxAArch64NoEditor",
 		"LinuxAArch64Server",
 		"LinuxAArchClient"
 	],

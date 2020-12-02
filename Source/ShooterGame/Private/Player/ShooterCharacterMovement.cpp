@@ -10,7 +10,7 @@
 
 UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 {
-	Super::SetIsReplicated(true);
+	Super::SetIsReplicatedByDefault(true);
 
 	AirControl = 0.95f;
 
@@ -61,21 +61,22 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		return;
 	}
 
+	AController* Controller = PawnOwner->GetController();
+		
 	if(bIsFrozen && (CharacterOwner->GetLocalRole() == ROLE_Authority || CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy))
 	{
 		StopMovementImmediately();
 		DisableMovement();
-		
-		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-		PlayerController->SetControlRotation(FrozenLookDirection);
-		PlayerController->SetIgnoreLookInput(true);
+
+		Controller->SetControlRotation(FrozenLookDirection);
+		Controller->SetIgnoreLookInput(true);
+
 		return;
 	}
 
 	if(!bIsFrozen && PawnOwner->IsLocallyControlled())
 	{
-		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-		PlayerController->SetIgnoreLookInput(false);
+		Controller->SetIgnoreLookInput(false);
 	}
 	
 	if (PawnOwner->IsLocallyControlled())
@@ -106,12 +107,10 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		bIsJetpackActive = true;	
 		JetpackFuel = FMath::Clamp(JetpackFuel - JetpackFuelConsumptionRate * DeltaSeconds, 0.0f, MaxJetpackFuel);
 
-		// The owner client update the fuel left in the player state 
-		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-		if(PlayerController)
+		if(PawnOwner->IsLocallyControlled())
 		{
-			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(PlayerController->PlayerState);
-			PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
+			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(Controller->PlayerState);
+			if(PlayerState) PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
 		}
 		
 		SetMovementMode(MOVE_Falling);
@@ -221,11 +220,10 @@ void UShooterCharacterMovement::RefillJetpack(float DeltaSeconds)
 	if (IsMovingOnGround())
 	{
 		if(JetpackFuel < MaxJetpackFuel) JetpackFuel = FMath::Clamp(JetpackFuel + JetpackFuelRefillRate * DeltaSeconds, 0.0f, MaxJetpackFuel);
-		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-		if(PlayerController)
+		if(PawnOwner->IsLocallyControlled())
 		{
-			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(PlayerController->PlayerState);
-			PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
+			AShooterPlayerState* PlayerState = Cast<AShooterPlayerState>(PawnOwner->GetController()->PlayerState);
+			if(PlayerState) PlayerState->SetJetpackFuelLeft(static_cast<int32>(JetpackFuel));
 		}
 	}
 }
@@ -300,20 +298,20 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 
 void UShooterCharacterMovement::DoNormalWallJump()
 {
-	FVector WallNormal;
+	FVector NewWallNormal;
 	
-	if(IsInAirNearWall(WallNormal))
+	if(IsInAirNearWall(NewWallNormal))
 	{
-		FVector JumpDirection = WallNormal + FVector(0.0f, 0.0f, 10.f); // Jump a little higher
-		ServerLaunchCharacter(WallNormal * WallJumpStrength);
-		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(WallNormal * WallJumpStrength, false, false);
+		FVector JumpDirection = NewWallNormal + FVector(0.0f, 0.0f, 10.f); // Jump a little higher
+		ServerLaunchCharacter(NewWallNormal * WallJumpStrength);
+		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(NewWallNormal * WallJumpStrength, false, false);
 	}
 }
 
 void UShooterCharacterMovement::DoWallJump(FVector Direction)
 {
-	FVector WallNormal;
-	if(IsInAirNearWall(WallNormal))
+	FVector NewWallNormal;
+	if(IsInAirNearWall(NewWallNormal))
 	{
 		ServerLaunchCharacter(Direction * WallJumpStrength);
 		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(Direction * WallJumpStrength, false, false);
@@ -440,8 +438,7 @@ void UShooterCharacterMovement::ServerSetFrozen_Implementation(bool NewIsFrozen)
 		GetWorld()->GetTimerManager().ClearTimer(FrozenTimer);
 		FrozenTimer.Invalidate();
 		GetWorld()->GetTimerManager().SetTimer(FrozenTimer, this, &UShooterCharacterMovement::UnFreeze, FrozenTime, false);
-		AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-		FrozenLookDirection = PlayerController->GetControlRotation();
+		FrozenLookDirection = PawnOwner->GetController()->GetControlRotation();
 		ServerSetFrozenLookDirection(FrozenLookDirection);
 	}	
 }
@@ -461,6 +458,8 @@ void UShooterCharacterMovement::UnFreeze()
 void UShooterCharacterMovement::OnRep_IsFrozen()
 {
 	//// Freezed or frozen ////
+	AController* Controller = PawnOwner->GetController();
+
 	if(bIsFrozen)
 	{
 		Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(true);
@@ -468,9 +467,8 @@ void UShooterCharacterMovement::OnRep_IsFrozen()
 		
 		if(PawnOwner->IsLocallyControlled())
 		{
-			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-			PlayerController->SetControlRotation(FrozenLookDirection);
-			PlayerController->SetIgnoreLookInput(true);
+			Controller->SetControlRotation(FrozenLookDirection);
+			Controller->SetIgnoreLookInput(true);
 		}
 	}
 	else
@@ -478,8 +476,7 @@ void UShooterCharacterMovement::OnRep_IsFrozen()
 		Cast<AShooterCharacter>(CharacterOwner)->SetFrozenAppearance(false);
 		if(PawnOwner->IsLocallyControlled())
 		{
-			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
-			PlayerController->SetIgnoreLookInput(false);
+			Controller->SetIgnoreLookInput(false);
 		}
 	}
 }
