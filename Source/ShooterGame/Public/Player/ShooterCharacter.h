@@ -260,10 +260,6 @@ class AShooterCharacter : public ACharacter
 	UFUNCTION(BlueprintCallable, Category = Pawn)
 	float GetRunningSpeedModifier() const;
 
-	/** get the character teleport distance */
-	UFUNCTION(BlueprintCallable, Category = Pawn)
-    float GetTeleportDistance() const;
-
 	/** get running state */
 	UFUNCTION(BlueprintCallable, Category = Pawn)
 	bool IsRunning() const;
@@ -339,10 +335,6 @@ protected:
 	UPROPERTY(Transient, Replicated)
 	uint8 bWantsToRun : 1;
 
-	/** Character teleport distance */
-	UPROPERTY(EditDefaultsOnly, Category = Pawn)
-	float TeleportDistance;
-	
 	/** from gamepad running is toggled */
 	uint8 bWantsToRunToggled : 1;
 

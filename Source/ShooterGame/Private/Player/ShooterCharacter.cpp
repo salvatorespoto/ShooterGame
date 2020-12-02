@@ -69,8 +69,6 @@ AShooterCharacter::AShooterCharacter(const FObjectInitializer& ObjectInitializer
 
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
-	
-	TeleportDistance = 1000.0f;
 }
 
 void AShooterCharacter::PostInitializeComponents()
@@ -1356,11 +1354,6 @@ bool AShooterCharacter::IsTargeting() const
 float AShooterCharacter::GetRunningSpeedModifier() const
 {
 	return RunningSpeedModifier;
-}
-
-float AShooterCharacter::GetTeleportDistance() const
-{
-	return TeleportDistance;
 }
 
 bool AShooterCharacter::IsFiring() const

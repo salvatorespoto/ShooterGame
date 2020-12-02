@@ -16,6 +16,7 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 
 	// Teleport
 	bWantsToTeleport = false;
+	TeleportDistance = 1000.0f;	// 100 unreal units = 1 meter
 	
 	// Jetpack
 	bIsJetpackEnabled = true;
@@ -87,16 +88,15 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 			ServerSetMoveDirection(MoveDirection);
 		}
 	}
+
 	
-	// Teleport is executed both on the owning client for responsiveness and the server
+	//// TELEPORT ////
+	
+	// Teleport is executed both on the owning client (for responsiveness) and the server
 	if (bWantsToTeleport && (CharacterOwner->GetLocalRole() == ROLE_Authority || CharacterOwner->GetLocalRole() == ROLE_AutonomousProxy))
 	{
-		AShooterCharacter* ShooterCharacterOwner = Cast<AShooterCharacter>(PawnOwner);
-
-		const FVector CurrentLocation = ShooterCharacterOwner->GetActorLocation();
-		const FVector NewLocation = ShooterCharacterOwner->GetActorLocation() + ShooterCharacterOwner->GetActorForwardVector() * ShooterCharacterOwner->GetTeleportDistance();
-
 		// Teleport forward to the nearest non blocked location inside the TeleportDistance
+		const FVector NewLocation = PawnOwner->GetActorLocation() + PawnOwner->GetActorForwardVector() * TeleportDistance;
 		PawnOwner->SetActorLocation(NewLocation, true);
 		bWantsToTeleport = false;
 	}
@@ -381,7 +381,7 @@ void UShooterCharacterMovement::DoTeleport()
 void UShooterCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)
 {
 	Super::UpdateFromCompressedFlags(Flags);
-
+	
 	bWantsToTeleport = (Flags & FSavedMove_Character::FLAG_Custom_0) != 0;
 	bWantsToJetpack = (Flags&FSavedMove_Character::FLAG_Custom_1) != 0;
 	bWantsToWallRun = (Flags&FSavedMove_Character::FLAG_Custom_2) != 0;
@@ -390,8 +390,7 @@ void UShooterCharacterMovement::UpdateFromCompressedFlags(uint8 Flags)
 class FNetworkPredictionData_Client* UShooterCharacterMovement::GetPredictionData_Client() const
 {
 	check(PawnOwner != NULL);
-	//check(PawnOwner->GetLocalRole() < ROLE_Authority);
-
+	
 	if (!ClientPredictionData)
 	{
 		UShooterCharacterMovement* MutableThis = const_cast<UShooterCharacterMovement*>(this);
@@ -516,7 +515,7 @@ uint8 FSavedMove_ExtendedMovement::GetCompressedFlags() const
 }
 
 bool FSavedMove_ExtendedMovement::CanCombineWith(const FSavedMovePtr& NewMove, ACharacter* Character, float MaxDelta) const
-{
+{	
 	if (bSavedWantsToTeleport != ((FSavedMove_ExtendedMovement*)& NewMove)->bSavedWantsToTeleport)
 	{
 		return false;

@@ -47,6 +47,10 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** Teleport character forward of "distance" units */
 	void DoTeleport();
 
+	/** Character teleport distance */
+	UPROPERTY(EditDefaultsOnly, Category = "Character Movement: Teleport")
+	float TeleportDistance;
+	
 	
 	//// JETPACK ////
 	
