@@ -29,7 +29,7 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	bWantsToJetpack = false;
 	
 	// Wall jump
-	WallJumpStrength = 1000.0f;
+	WallJumpStrength = 800.0f;
 
 	// Wall run
 	bWallRunEnable = true;
@@ -39,6 +39,7 @@ UShooterCharacterMovement::UShooterCharacterMovement(const FObjectInitializer& O
 	WallRunSide = 0;
 	bIsWallRunning = false;
 	bWantsToWallRun = false;
+	WallRunJumpStrength = 1000.0f;
 
 	// Freezing gun
 	bIsFrozen = false;
@@ -231,7 +232,7 @@ void UShooterCharacterMovement::RefillJetpack(const float DeltaSeconds)
 	}
 }
 
-bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
+bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal, float& NewWallRunSide) const
 {
 	if(IsMovingOnGround()) return false;
 	
@@ -280,14 +281,15 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 			// DEBUG DrawDebugDirectionalArrow(GetWorld(), HitPoint, HitPoint + WallNormal * 100.0f, 120.f, FColor::Magenta, true, -1.f, 0, 5.f);
 
 			// Update wall side due the character can turn 180 while wall running
-			float NewWallRunSide = FMath::Sign(FVector::CrossProduct(NewWallNormal, PawnOwner->GetActorForwardVector()).Z);
-			AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
+			NewWallRunSide = FMath::Sign(FVector::CrossProduct(NewWallNormal, PawnOwner->GetActorForwardVector()).Z);
+			/*
+			 AShooterPlayerController* PlayerController = PawnOwner ? Cast<AShooterPlayerController>(PawnOwner->GetController()) : NULL;
 			if(PlayerController && NewWallRunSide != WallRunSide)
 			{
 				WallRunSide = NewWallRunSide;
 				CharacterSideLean(0.0f);
 				CharacterSideLean(-10.0f * WallRunSide); // Apply the proper lean
-			}
+			}*/
 			
 			return true; // The player is near a wall -> return true 
 		}
@@ -298,25 +300,28 @@ bool UShooterCharacterMovement::IsInAirNearWall(FVector& NewWallNormal)
 	return false;
 }
 
-void UShooterCharacterMovement::DoNormalWallJump()
+void UShooterCharacterMovement::DoNormalWallJump(const float JumpStrength) const
 {
 	FVector NewWallNormal;
+	float NewWallRunSide;
 	
-	if(IsInAirNearWall(NewWallNormal))
+	if(IsInAirNearWall(NewWallNormal,NewWallRunSide))
 	{
 		const FVector JumpDirection = NewWallNormal + FVector(0.0f, 0.0f, 0.5f); // Jump a little higher
-		ServerLaunchCharacter(JumpDirection * WallJumpStrength);
-		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(NewWallNormal * WallJumpStrength, false, false);
+		ServerLaunchCharacter(JumpDirection * JumpStrength);
+		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(NewWallNormal * JumpStrength, false, false);
 	}
 }
 
-void UShooterCharacterMovement::DoWallJump(FVector Direction)
+void UShooterCharacterMovement::DoWallJump(const FVector& Direction, const float JumpStrength)
 {
 	FVector NewWallNormal;
-	if(IsInAirNearWall(NewWallNormal))
+	float NewWallRunSide;
+	
+	if(IsInAirNearWall(NewWallNormal,NewWallRunSide))
 	{
-		ServerLaunchCharacter(Direction * WallJumpStrength);
-		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter(Direction * WallJumpStrength, false, false);
+		ServerLaunchCharacter((Direction + NewWallNormal + FVector(0.0f, 0.0f, 0.5f)) * JumpStrength);
+		if(PawnOwner->GetLocalRole() < ROLE_Authority) CharacterOwner->LaunchCharacter((Direction + NewWallNormal + FVector(0.0f, 0.0f, 0.5f)) * JumpStrength, false, false);
 	}
 }
 
@@ -350,7 +355,7 @@ void UShooterCharacterMovement::SetWallRun(const bool bNewIsWallRunning, const F
 			// Set max wall run timer
 			GetWorld()->GetTimerManager().SetTimer(WallRunTimerHandle, this, &UShooterCharacterMovement::StopWallRun, MaxWallRunTime, false);
 		}
-		// Velocity.Z = 0.0;
+		Velocity.Z = 0.0;
 	}
 	else	// Exit wall run
 	{
@@ -371,7 +376,7 @@ void UShooterCharacterMovement::ClearWallRunTimer()
 
 void UShooterCharacterMovement::StopWallRun()
 {
-	DoNormalWallJump();
+	DoNormalWallJump(500.0f);
 }
 
 void UShooterCharacterMovement::DoTeleport()
@@ -421,7 +426,7 @@ bool UShooterCharacterMovement::CanWallRun()
 
 	if(!bIsWallRunning && Velocity.Z > 0) return false;	// Only attach to wall when falling
 	
-	return (bWallRunEnable && IsInAirNearWall(WallNormal)) && (Speed > MinSpeedToWallRun);	// Cannot wall run too slow
+	return (bWallRunEnable && !bIsJetpackActive && IsInAirNearWall(WallNormal,WallRunSide)) && (Speed >= MinSpeedToWallRun);	// Cannot wall run too slow
 }
 
 void UShooterCharacterMovement::DoWallRun(bool bNewWantsToWallRun)

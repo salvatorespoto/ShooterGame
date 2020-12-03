@@ -108,13 +108,13 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	float WallJumpStrength;
 	
 	/** Check if the character is in the air and near a wall */
-	bool IsInAirNearWall(FVector& NewWallNormal);
+	bool IsInAirNearWall(FVector& NewWallNormal, float& NewWallRunSide) const;
 	
 	/** [Server] + [Local] The character execute a wall jump in the wall normal direction */ 
-	void DoNormalWallJump();
+	void DoNormalWallJump(float JumpStrength) const;
 
 	/** [Server] + [Local] The character execute a wall jump in the direction Direction */
-	void DoWallJump(FVector Direction);
+	void DoWallJump(const FVector& Direction, float JumpStrength);
 
 	/** [Server] Launch the character */
 	UFUNCTION(Reliable, Server, WithValidation)
@@ -165,6 +165,10 @@ class UShooterCharacterMovement : public UCharacterMovementComponent
 	/** Clear the pending timer that handle the maximum allowed wall run time */
 	void ClearWallRunTimer();
 
+	/** The jump strength while wall running */
+	UPROPERTY(BlueprintReadOnly, EditAnywhere, Category = "Character Movement: Wall Run")
+	float WallRunJumpStrength;
+	
 
 	//// FREEZING GUN ////
 	

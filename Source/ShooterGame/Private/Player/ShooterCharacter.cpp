@@ -617,7 +617,7 @@ void AShooterCharacter::DestroyInventory()
 
 void AShooterCharacter::SpawnAmmo_Implementation()
 {
-	UObject* AACtor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Pickups/Pickup_DroppedAmmoGun.Pickup_DroppedAmmoGun")));
+ 	UObject* AACtor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Pickups/Pickup_DroppedAmmoGun.Pickup_DroppedAmmoGun")));
 		
 	UBlueprint* GeneratedBP = Cast<UBlueprint>(AACtor);
 	if (!AACtor) return;
@@ -806,6 +806,12 @@ void AShooterCharacter::SetRunning(bool bNewRunning, bool bToggle)
 	{
 		ServerSetRunning(bNewRunning, bToggle);
 	}
+}
+
+bool AShooterCharacter::CanJumpInternal_Implementation() const
+{
+	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
+	return Super::CanJumpInternal_Implementation() && !MoveComp->bIsWallRunning;
 }
 
 bool AShooterCharacter::ServerSetRunning_Validate(bool bNewRunning, bool bToggle)
@@ -1098,8 +1104,14 @@ bool AShooterCharacter::IsRunning() const
 void AShooterCharacter::OnWallJump()
 {
 	UShooterCharacterMovement* MoveComp = Cast<UShooterCharacterMovement>(GetCharacterMovement());
-	if(MoveComp && MoveComp->bIsWallRunning) MoveComp->DoWallJump(GetActorForwardVector()); 
-	else if(MoveComp) MoveComp->DoNormalWallJump();
+	if(MoveComp && MoveComp->bIsWallRunning) // If wall running jump in the looking direction
+	{
+		MoveComp->DoWallJump(GetControlRotation().Vector(), MoveComp->WallJumpStrength);
+	}
+	else if(MoveComp && MoveComp->bIsJetpackActive) // If using jetpack near a wall running jump in normal wall direction
+	{
+		MoveComp->DoNormalWallJump(MoveComp->WallJumpStrength);
+	}
 }
 
 bool AShooterCharacter::IsUsingJetPack() const
@@ -1136,8 +1148,11 @@ bool AShooterCharacter::IsFrozen() const
 
 void AShooterCharacter::SetFrozenAppearance(const bool bIsFrozen) const
 {
-	GetPawnMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
-	GetWeapon()->GetWeaponMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
+	if(IsAlive())
+	{
+		GetPawnMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
+		GetWeapon()->GetWeaponMesh()->SetScalarParameterValueOnMaterials("IsFrozen", bIsFrozen ? 1.0f : 0.0f);
+	}
 }
 
 void AShooterCharacter::Tick(float DeltaSeconds)

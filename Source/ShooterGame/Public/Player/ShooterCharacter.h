@@ -113,6 +113,9 @@ class AShooterCharacter : public ACharacter
 	/** [server + local] change running state */
 	void SetRunning(bool bNewRunning, bool bToggle);
 
+	/** Check if a player can jump */
+	virtual bool CanJumpInternal_Implementation() const override;
+	
 	/** [server + local] Teleport */
 	void DoTeleport();
 
