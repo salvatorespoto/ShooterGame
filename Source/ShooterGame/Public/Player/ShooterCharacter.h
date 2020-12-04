@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "ShooterPickup_Ammo.h"
 #include "ShooterTypes.h"
 #include "ShooterCharacter.generated.h"
 
@@ -493,6 +494,9 @@ protected:
 	UFUNCTION(reliable, server, WithValidation)
 	void ServerEquipWeapon(class AShooterWeapon* NewWeapon);
 
+	/** A dropped ammo pickup when the player die */
+	TSubclassOf<class AShooterPickup_Ammo> ShooterPickupDroppedAmmoClass;
+	
 	/** [server] spawns all actor's ammo as pickups */
 	UFUNCTION(reliable, server, WithValidation)
 	void SpawnAmmo();

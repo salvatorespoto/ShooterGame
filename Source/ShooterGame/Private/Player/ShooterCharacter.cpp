@@ -60,6 +60,10 @@ AShooterCharacter::AShooterCharacter(const FObjectInitializer& ObjectInitializer
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_PROJECTILE, ECR_Block);
 	GetCapsuleComponent()->SetCollisionResponseToChannel(COLLISION_WEAPON, ECR_Ignore);
 
+	// Find the class for the dropped ammo pickup on player death
+	static ConstructorHelpers::FClassFinder<AShooterPickup_Ammo> BPClassFinder(TEXT("/Game/Blueprints/Pickups/Pickup_DroppedAmmoGun"));
+	ShooterPickupDroppedAmmoClass = BPClassFinder.Class;
+	
 	TargetingSpeedModifier = 0.5f;
 	bIsTargeting = false;
 	RunningSpeedModifier = 1.5f;
@@ -376,7 +380,7 @@ void AShooterCharacter::OnDeath(float KillingDamage, struct FDamageEvent const& 
 	}
 
 	// Leave player ammo as pickup
-	if (GetLocalRole() == ROLE_Authority) SpawnAmmo();
+	SpawnAmmo();
 	
 	// remove all weapons
 	DestroyInventory();
@@ -617,18 +621,10 @@ void AShooterCharacter::DestroyInventory()
 
 void AShooterCharacter::SpawnAmmo_Implementation()
 {
- 	UObject* AACtor = Cast<UObject>(StaticLoadObject(UObject::StaticClass(), NULL, TEXT("/Game/Blueprints/Pickups/Pickup_DroppedAmmoGun.Pickup_DroppedAmmoGun")));
-		
-	UBlueprint* GeneratedBP = Cast<UBlueprint>(AACtor);
-	if (!AACtor) return;
-	
-	UClass* SpawnClass = AACtor->StaticClass();
-	if (SpawnClass == NULL) return;
-    
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	AShooterPickup_Ammo* DroppedAmmo = Cast<AShooterPickup_Ammo>(GetWorld()->SpawnActor<AActor>(GeneratedBP->GeneratedClass, GetActorLocation(), GetActorRotation(), SpawnParams));
+	AShooterPickup_Ammo* DroppedAmmo = Cast<AShooterPickup_Ammo>(GetWorld()->SpawnActor<AActor>(ShooterPickupDroppedAmmoClass, GetActorLocation(), GetActorRotation(), SpawnParams));
 	const int32 CurrentAmmo = GetInventoryWeapon(0)->GetCurrentAmmo();
 	DroppedAmmo->SetAmmoClips(CurrentAmmo / GetInventoryWeapon(0)->GetAmmoPerClip());
 	DroppedAmmo->SetAdditionalBullets(CurrentAmmo % GetInventoryWeapon(0)->GetAmmoPerClip());
