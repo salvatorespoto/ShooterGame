@@ -119,8 +119,8 @@ void UShooterCharacterMovement::OnMovementUpdated(float DeltaSeconds, const FVec
 		SetMovementMode(MOVE_Falling);
 		
 		Velocity.Z += JetpackForce * DeltaSeconds;
-		Velocity.Y += (MoveDirection.Y * JetpackForce * DeltaSeconds) * 0.5f;
-		Velocity.X += (MoveDirection.X * JetpackForce * DeltaSeconds) * 0.5f;
+		Velocity.Y += (MoveDirection.Y * JetpackForce * DeltaSeconds) * 0.3f;
+		Velocity.X += (MoveDirection.X * JetpackForce * DeltaSeconds) * 0.3f;
 	}
 	else bIsJetpackActive = false;
 	
@@ -344,6 +344,7 @@ void UShooterCharacterMovement::SetWallRun(const bool bNewIsWallRunning, const F
 	
 	if(bIsWallRunning)	// Enter wall run
 	{
+		Cast<AShooterCharacter>(CharacterOwner)->SetRunning(true,false);
 		SetMovementMode(MOVE_Flying);
 		
 		if(PawnOwner->IsLocallyControlled())
@@ -359,6 +360,7 @@ void UShooterCharacterMovement::SetWallRun(const bool bNewIsWallRunning, const F
 	}
 	else	// Exit wall run
 	{
+		Cast<AShooterCharacter>(CharacterOwner)->SetRunning(false,false);
 		SetMovementMode(MOVE_Falling);
 		if(PawnOwner->IsLocallyControlled())
 		{
