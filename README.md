@@ -45,14 +45,23 @@ The character is teleported forward to the teleport distance if no obstacles are
 
 ### Jetpack, wall jump and wall run
 Due both wall jump and wall run have been implemented, I had to choice how flying near a wall interacts with both.
+
 If the player is flying near a wall with the jetpack active (i.e. the button that corresponds to the jetpack action is pressed) and a jump action is executed the player make a jump that push him a little higher and in the normal wall direction, as required from the test.
+
 But due the character is able to also wall run, I thought that the player expects a smooth transition to wall running when he is falling near a wall. 
+
 So if the player deactivate the jetpack and start falling near a wall it transitions to a wall run, if it has the minimum required velocity to execute the movement.
+
 A character can wall run only if he has and maintains a minimum speed. This value is configurable and could be also 0, in that case it sticks to the walls. 
+
 A player can wall run continuously for a maximum configurable time (default 3.5 sec), and then it fall down. 
+
 While wall running a player can move upwards and downwards the wall.
+
 While wall running a player can turn on himself, as soon as he maintains the minimum speed, and can execute a jump in the looking direction, but, despite the direction, a jump always push him a little away the wall.
+
 The wall run can be executed only on the objects that are tagged as “Wall”. This has required an additional level editing on both the maps “Highrise” and “Sanctuary”, but it’s more efficient due it speeds up the collision detection process and gives a finer control on the gameplay, avoiding unpredictable situations.
+
 In particular, the “Sanctuary” level required a little bit more work due all the walls were Geometry Brush Actors. I had to generate bounding volumes from them, then tag these as “Walls”. Anyway the level design with a lot of asperities on the walls it’s not well suited for a wall run dynamic.
 
 ### Freezing Gun
