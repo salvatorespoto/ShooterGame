@@ -43453,7 +43453,6 @@
               <e p="ShooterExplosionEffect.cpp" t="Include" />
               <e p="ShooterImpactEffect.cpp" t="Include" />
             </e>
-            <e p="MyCharacterMovementComponent.cpp" t="Include" />
             <e p="Online" t="Include">
               <e p="ShooterGame_FreeForAll.cpp" t="Include" />
               <e p="ShooterGame_Menu.cpp" t="Include" />
@@ -43595,7 +43594,6 @@
               <e p="ShooterExplosionEffect.h" t="Include" />
               <e p="ShooterImpactEffect.h" t="Include" />
             </e>
-            <e p="MyCharacterMovementComponent.h" t="Include" />
             <e p="Online" t="Include">
               <e p="ShooterGame_FreeForAll.h" t="Include" />
               <e p="ShooterGame_Menu.h" t="Include" />
