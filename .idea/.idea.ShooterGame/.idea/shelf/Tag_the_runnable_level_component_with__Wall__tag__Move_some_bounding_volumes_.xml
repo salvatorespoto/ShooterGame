@@ -1,9 +1,0 @@
-<changelist name="Tag_the_runnable_level_component_with__Wall__tag__Move_some_bounding_volumes_" date="1606409474211" recycled="false">
-  <option name="PATH" value="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/shelf/Tag_the_runnable_level_component_with__Wall__tag__Move_some_bounding_volumes_/shelved.patch" />
-  <option name="DESCRIPTION" value="Tag the runnable level component with &quot;Wall&quot; tag. Move some bounding volumes." />
-  <binary>
-    <option name="BEFORE_PATH" value="Content/Maps/Highrise_Collisions_Temp.umap" />
-    <option name="AFTER_PATH" value="Content/Maps/Highrise_Collisions_Temp.umap" />
-    <option name="SHELVED_PATH" value="$PROJECT_DIR$/.idea/.idea.ShooterGame/.idea/shelf/Tag_the_runnable_level_component_with__Wall__tag__Move_some_bounding_volumes_/Highrise_Collisions_Temp.umap" />
-  </binary>
-</changelist>
